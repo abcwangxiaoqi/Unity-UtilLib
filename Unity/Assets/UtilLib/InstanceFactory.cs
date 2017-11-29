@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class MonoInstanceFactory
+public sealed class MSingletonFactory
 {
     static Dictionary<string, MonoBehaviour> dic = new Dictionary<string, MonoBehaviour>();
 
@@ -15,7 +15,7 @@ public sealed class MonoInstanceFactory
 
         GameObject go = new GameObject(type);
         Object.DontDestroyOnLoad(go);
-        T t=go.AddComponent<T>();
+        T t = go.AddComponent<T>();
         dic.Add(type, t);
         return t;
     }
@@ -32,11 +32,11 @@ public sealed class MonoInstanceFactory
     }
 }
 
-public sealed class InstanceFactory
+public sealed class SingletonFactory
 {
     static Dictionary<string, object> dic = new Dictionary<string, object>();
 
-    public static T Get<T>() where T : class,new()
+    public static T Get<T>() where T : class, new()
     {
         string type = typeof(T).Name;
         if (dic.ContainsKey(type))
