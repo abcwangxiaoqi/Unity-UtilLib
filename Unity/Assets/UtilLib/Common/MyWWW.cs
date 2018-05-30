@@ -63,7 +63,7 @@ public class MyWWW : IEnumerator, System.IDisposable
     {
         get
         {
-            return _www.audioClip;
+            return _www.GetAudioClip();
         }
     }
 
