@@ -4,3 +4,5 @@ Unity/Temp/
 *.suo
 *.csproj
 *.user
+Unity/.vs/
+*.userprefs
