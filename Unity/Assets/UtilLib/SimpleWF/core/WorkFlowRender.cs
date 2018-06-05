@@ -11,7 +11,7 @@ namespace SimpleWF
             
         }
 
-        public override void excuteCmd(string cmd)
+        public override void excuteCmd(string cmd, params object[] paramters)
         {
             base.excuteCmd(cmd);
 

@@ -5,7 +5,7 @@ namespace IMR
 {
     public interface IDataModel : IDisposable
     {
-        void Enqueue(string cmd);
+        void Enqueue(string cmd,params object[] parmters);
         void Enqueue<T>(string cmd, T t);      
         void Enqueue<T,T1>(string cmd, T t,T1 t1);
         void Enqueue<T, T1,T2>(string cmd, T t, T1 t1,T2 t2);
@@ -18,14 +18,14 @@ namespace IMR
     {
         List<IDataRender> renders = new List<IDataRender>();
 
-        public void Enqueue(string cmd)
+        public void Enqueue(string cmd, params object[] parmters)
         {
             if (string.IsNullOrEmpty(cmd))
                 return;
 
             for (int i = 0; i < renders.Count; i++)
             {
-                renders[i].excuteCmd(cmd);
+                renders[i].excuteCmd(cmd,parmters);
             }
         }
 

@@ -31,7 +31,7 @@ public class testModel : DataModel
 
 public class testRender : DataRender<testModel>
 {
-    public override void excuteCmd(string cmd)
+    public override void excuteCmd(string cmd,params object[] paramters)
     {
         base.excuteCmd(cmd);
 

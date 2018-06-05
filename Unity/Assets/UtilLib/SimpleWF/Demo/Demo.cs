@@ -8,6 +8,7 @@ namespace SimpleWF
     {
         public static bool allow4 = false;
         public static int N = 0;
+
         void Start()
         {
             WorkFlow flow = new WorkFlow();

@@ -5,7 +5,7 @@ namespace IMR
     public interface IDataRender : IDisposable
     {
         void update();
-        void excuteCmd(string cmd);
+        void excuteCmd(string cmd,params object[] paramters);
         void excuteCmdWithParamter<T>(string cmd,T t);
         void excuteCmdWithParamters<T, T1>(string cmd, T t, T1 t1);
         void excuteCmdWithParamters<T, T1, T2>(string cmd, T t, T1 t1, T2 t2);
@@ -48,7 +48,7 @@ namespace IMR
         virtual public void fixedupdate()
         { }
 
-        public virtual void excuteCmd(string cmd)
+        public virtual void excuteCmd(string cmd,params object[] paramters)
         {
         }
 

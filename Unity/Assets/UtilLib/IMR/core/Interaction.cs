@@ -31,13 +31,18 @@ namespace IMR
             active = false;
         }
 
-        protected void sendCmd(string cmd)
+        /// <summary>
+        /// 带参数 尽量使用 后面泛型方法 本方法带参数 会有 装箱拆箱
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="parmters"></param>
+        protected void sendCmd(string cmd,params object[] parmters)
         {
             if (!active)
             {
                 initilize();
             }
-            model.Enqueue(cmd);
+            model.Enqueue(cmd, parmters);
         }
 
         protected void sendCmdWithParamter<T>(string cmd, T t)
@@ -117,13 +122,18 @@ namespace IMR
             active = false;
         }
 
-        protected void sendCmd(string cmd)
+        /// <summary>
+        /// 带参数 尽量使用 后面泛型方法 本方法带参数 会有 装箱拆箱
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="parmters"></param>
+        protected void sendCmd(string cmd, params object[] parmters)
         {
             if (!active)
             {
                 initilize();
             }
-            model.Enqueue(cmd);
+            model.Enqueue(cmd, parmters);
         }
 
         protected void sendCmdWithParamter<T>(string cmd, T t)
@@ -205,13 +215,18 @@ namespace IMR
             active = false;
         }
 
-        protected void sendCmd(string cmd)
+        /// <summary>
+        /// 带参数 尽量使用 后面泛型方法 本方法带参数 会有 装箱拆箱
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="parmters"></param>
+        protected void sendCmd(string cmd, params object[] parmters)
         {
             if (!active)
             {
                 initilize();
             }
-            model.Enqueue(cmd);
+            model.Enqueue(cmd, parmters);
         }
 
         protected void sendCmdWithParamter<T>(string cmd, T t)
@@ -295,13 +310,18 @@ namespace IMR
             active = false;
         }
 
-        protected void sendCmd(string cmd)
+        /// <summary>
+        /// 带参数 尽量使用 后面泛型方法 本方法带参数 会有 装箱拆箱
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="parmters"></param>
+        protected void sendCmd(string cmd, params object[] parmters)
         {
             if (!active)
             {
                 initilize();
             }
-            model.Enqueue(cmd);
+            model.Enqueue(cmd, parmters);
         }
 
         protected void sendCmdWithParamter<T>(string cmd, T t)
@@ -387,13 +407,18 @@ namespace IMR
             active = false;
         }
 
-        protected void sendCmd(string cmd)
+        /// <summary>
+        /// 带参数 尽量使用 后面泛型方法 本方法带参数 会有 装箱拆箱
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="parmters"></param>
+        protected void sendCmd(string cmd, params object[] parmters)
         {
             if (!active)
             {
                 initilize();
             }
-            model.Enqueue(cmd);
+            model.Enqueue(cmd, parmters);
         }
 
         protected void sendCmdWithParamter<T>(string cmd, T t)
@@ -481,13 +506,18 @@ namespace IMR
             active = false;
         }
 
-        protected void sendCmd(string cmd)
+        /// <summary>
+        /// 带参数 尽量使用 后面泛型方法 本方法带参数 会有 装箱拆箱
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="parmters"></param>
+        protected void sendCmd(string cmd, params object[] parmters)
         {
             if (!active)
             {
                 initilize();
             }
-            model.Enqueue(cmd);
+            model.Enqueue(cmd, parmters);
         }
 
         protected void sendCmdWithParamter<T>(string cmd, T t)
@@ -577,13 +607,18 @@ namespace IMR
             active = false;
         }
 
-        protected void sendCmd(string cmd)
+        /// <summary>
+        /// 带参数 尽量使用 后面泛型方法 本方法带参数 会有 装箱拆箱
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="parmters"></param>
+        protected void sendCmd(string cmd, params object[] parmters)
         {
             if (!active)
             {
                 initilize();
             }
-            model.Enqueue(cmd);
+            model.Enqueue(cmd, parmters);
         }
 
         protected void sendCmdWithParamter<T>(string cmd, T t)
@@ -675,13 +710,18 @@ namespace IMR
             active = false;
         }
 
-        protected void sendCmd(string cmd)
+        /// <summary>
+        /// 带参数 尽量使用 后面泛型方法 本方法带参数 会有 装箱拆箱
+        /// </summary>
+        /// <param name="cmd"></param>
+        /// <param name="parmters"></param>
+        protected void sendCmd(string cmd, params object[] parmters)
         {
             if (!active)
             {
                 initilize();
             }
-            model.Enqueue(cmd);
+            model.Enqueue(cmd, parmters);
         }
 
         protected void sendCmdWithParamter<T>(string cmd, T t)
