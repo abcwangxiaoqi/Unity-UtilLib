@@ -71,9 +71,4 @@ public class testRender2 : DataRender<testModel>
             model.obj.name = "testRender2";
         }
     }
-
-    void creat(object[] objs)
-    {
-        model.obj.name = "testRender2";
-    }
 }
