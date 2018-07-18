@@ -37,14 +37,19 @@ namespace MyDebug
             return sb.ToString();
         }
 
+        public static object _lock = new object();
+
         public void Log(string msg)
         {
             if (!enable || !Debuger.enable)
                 return;
 
-            msg = GetLogFormat(msg, LogType.Log);
-            Debug.Log(msg);
-            StringPool.Collect(msg);
+            lock(_lock)
+            {
+                msg = GetLogFormat(msg, LogType.Log);
+                Debug.Log(msg);
+                StringPool.Collect(msg);
+            }
         }
 
         public void Log(object message)
@@ -56,10 +61,12 @@ namespace MyDebug
         {
             if (!enable || !Debuger.enable)
                 return;
-
-            msg = GetLogFormat(msg, LogType.Error);
-            Debug.LogError(msg);
-            StringPool.Collect(msg);
+            lock (_lock)
+            {
+                msg = GetLogFormat(msg, LogType.Error);
+                Debug.LogError(msg);
+                StringPool.Collect(msg);
+            }
         }
 
         public void LogError(object message)
@@ -72,9 +79,12 @@ namespace MyDebug
             if (!enable || !Debuger.enable)
                 return;
 
-            msg = GetLogFormat(msg, LogType.Warning);
-            Debug.LogWarning(msg);
-            StringPool.Collect(msg);
+            lock (_lock)
+            {
+                msg = GetLogFormat(msg, LogType.Warning);
+                Debug.LogWarning(msg);
+                StringPool.Collect(msg);
+            }
         }
 
         public void LogWarning(object message)
