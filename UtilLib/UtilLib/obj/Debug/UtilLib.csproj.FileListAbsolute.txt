@@ -1,7 +1,0 @@
-E:\MyGitProject\UtilLib\UtilLib\UtilLib\bin\Debug\UtilLib.dll
-E:\MyGitProject\UtilLib\UtilLib\UtilLib\bin\Debug\UtilLib.pdb
-E:\MyGitProject\UtilLib\UtilLib\UtilLib\bin\Debug\UnityEngine.dll
-E:\MyGitProject\UtilLib\UtilLib\UtilLib\bin\Debug\UnityEngine.xml
-E:\MyGitProject\UtilLib\UtilLib\UtilLib\obj\Debug\UtilLib.csprojResolveAssemblyReference.cache
-E:\MyGitProject\UtilLib\UtilLib\UtilLib\obj\Debug\UtilLib.dll
-E:\MyGitProject\UtilLib\UtilLib\UtilLib\obj\Debug\UtilLib.pdb
