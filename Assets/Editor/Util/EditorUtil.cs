@@ -42,5 +42,20 @@ public static class EditorUtil
 
         return item;
     }
+
+    public static string GetTranPath(GameObject go,GameObject root=null)
+    {
+        if (go == null || go==root)
+            return null;
+
+        string path = go.name;
+
+        if(go.transform.parent!=null)
+        {
+            path = GetTranPath(go.transform.parent.gameObject, root)+"/"+path;
+        }
+
+        return path;
+    }
 }
 #endif

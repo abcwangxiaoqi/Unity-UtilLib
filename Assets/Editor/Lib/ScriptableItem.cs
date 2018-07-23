@@ -1,10 +1,7 @@
 ﻿
-using UnityEngine;
-using System.Collections;
-using UnityEditor;
-using System.IO;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public class ScriptableItem : ObjectBase
 {
