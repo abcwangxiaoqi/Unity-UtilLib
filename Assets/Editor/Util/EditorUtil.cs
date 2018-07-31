@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 
 public static class EditorExpand
 {
@@ -11,6 +13,46 @@ public static class EditorExpand
             return;
 
         Selection.activeObject = t;
+    }
+
+    /// <summary>
+    /// Sets the light map scale.
+    /// </summary>
+    /// <param name="renderers">Renderers.</param>
+    /// <param name="scale">Scale.</param>
+    public static void SetLightMapScale(this Renderer[] renderers,float scale)
+    {
+        if (null == renderers)
+            return;
+
+
+            foreach (var item in renderers)
+            {
+                SerializedObject so = new SerializedObject(item);
+                so.FindProperty("m_ScaleInLightmap").floatValue = scale;
+                so.ApplyModifiedProperties();
+            }
+    }
+
+    /// <summary>
+    /// tar whether is child of go
+    /// </summary>
+    /// <param name="go"></param>
+    /// <param name="tar"></param>
+    /// <returns></returns>
+    public static bool isChild(this Transform go, GameObject tar)
+    {
+        if (null == go || null==tar)
+        {
+            return false;
+        }
+
+        if (go.parent != null && go.parent==tar.transform)
+        {
+            return true;
+        }
+
+        return isChild(go.parent, tar);
     }
 }
 
@@ -49,13 +91,76 @@ public static class EditorUtil
             return null;
 
         string path = go.name;
-
-        if(go.transform.parent!=null)
+        
+        if(go.transform.parent!=null && go.transform.parent.gameObject!=root)
         {
             path = GetTranPath(go.transform.parent.gameObject, root)+"/"+path;
         }
 
         return path;
+    }
+
+    /// <summary>
+    /// Occlusions the bake.
+    /// </summary>
+    /// <returns><c>true</c>, if bake was occlusioned, <c>false</c> otherwise.</returns>
+    /// <param name="scene">Scene.</param>
+    /// <param name="smallestHole">Smallest hole.</param>
+    /// <param name="smallestOccluder">Smallest occluder.</param>
+    /// <param name="backfaceThreshold">Backface threshold.</param>
+    public static bool OcclusionBake(string scene,float smallestHole=0.25f,float smallestOccluder=5f,float backfaceThreshold=100f)
+    {
+        Scene s = EditorSceneManager.OpenScene(scene);
+
+        StaticOcclusionCulling.smallestHole = smallestHole;
+        StaticOcclusionCulling.smallestOccluder = smallestOccluder;
+        StaticOcclusionCulling.backfaceThreshold = backfaceThreshold;
+
+        bool success= StaticOcclusionCulling.Compute();
+
+        EditorSceneManager.SaveScene(s);
+
+        return success;
+    }
+
+    /// <summary>
+    /// export file 
+    /// </summary>
+    /// <param name="assetPathName"></param>
+    /// <param name="outputPath"></param>
+    /// <param name="excludeSuffix"></param>
+    public static void ExportPackage(string assetPathName, string outputPath,params string[] excludeSuffix)
+    {
+        if (string.IsNullOrEmpty(assetPathName))
+            return;
+
+        string[] files = AssetDatabase.GetDependencies(assetPathName);
+        List<string> packageFiles = new List<string>();
+
+        bool include = true;
+        foreach (var item in files)
+        {
+            include = true;
+            if (excludeSuffix!=null)
+            {
+                foreach (var suffix in excludeSuffix)
+                {
+                    if (FileHelper.getFileTypeByPath(item) == suffix)
+                    {
+                        include = false;
+                        break;
+                    }
+                }
+            }
+
+            if(include)
+            {
+                packageFiles.Add(item);
+            }            
+        }
+
+        AssetDatabase.ExportPackage(packageFiles.ToArray(), outputPath);
+        AssetDatabase.Refresh();
     }
 }
 #endif
