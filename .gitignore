@@ -6,3 +6,6 @@ Unity/Temp/
 *.user
 Unity/.vs/
 *.userprefs
+Library/
+.vs/
+Temp/

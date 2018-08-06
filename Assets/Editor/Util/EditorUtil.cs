@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
+using SevenZip.Compression.LZMA;
 
 public static class EditorExpand
 {
@@ -131,8 +132,11 @@ public static class EditorUtil
     /// <param name="excludeSuffix"></param>
     public static void ExportPackage(string assetPathName, string outputPath,params string[] excludeSuffix)
     {
-        if (string.IsNullOrEmpty(assetPathName))
+        if (string.IsNullOrEmpty(assetPathName) || string.IsNullOrEmpty(outputPath))
+        {
+            Debug.LogError("assetPathName or  outputPath is a empty path!");
             return;
+        }
 
         string[] files = AssetDatabase.GetDependencies(assetPathName);
         List<string> packageFiles = new List<string>();
@@ -160,6 +164,81 @@ public static class EditorUtil
         }
 
         AssetDatabase.ExportPackage(packageFiles.ToArray(), outputPath);
+        AssetDatabase.Refresh();
+    }
+
+    /// <summary>
+    /// export asset in zip
+    /// </summary>
+    /// <param name="assetPathName"></param>
+    /// <param name="outputPath"></param>
+    /// <param name="excludeSuffix"></param>
+    public static void ExportAssetZip(string assetPathName, string outputPath, params string[] excludeSuffix)
+    {
+        if (string.IsNullOrEmpty(assetPathName) || string.IsNullOrEmpty(outputPath))
+        {
+            Debug.LogError("assetPathName or  outputPath is a empty path!");
+            return;
+        }            
+
+        if (FileHelper.getFileTypeByPath(outputPath) != ".zip")
+        {
+            Debug.LogError("outputPath is not a right path!");
+            return;
+        }           
+
+        string[] files = AssetDatabase.GetDependencies(assetPathName);
+
+        //add target files
+        List<string> packageFiles = new List<string>();
+        bool include = true;
+        foreach (var item in files)
+        {
+            include = true;
+            if (excludeSuffix != null)
+            {
+                string sfx = FileHelper.getFileTypeByPath(item);
+                foreach (var suffix in excludeSuffix)
+                {                    
+                    if (sfx == suffix)
+                    {
+                        include = false;
+                        break;
+                    }
+                }
+            }
+
+            if (include)
+            {
+                packageFiles.Add(item);
+            }
+        }
+        
+        //add mate files
+        List<string> packageMateFiles = new List<string>();
+        foreach (var item in packageFiles)
+        {
+            packageMateFiles.Add(item + ".meta");
+        }
+        packageFiles.AddRange(packageMateFiles);
+
+
+        //set a temp path
+        string tempFold = "~tempZip";
+
+        foreach (var item in packageFiles)
+        {
+            string name = FileHelper.getFileNameAndTypeByPath(item);
+            string tarPath = tempFold + "/" + name;
+            FileHelper.copyFile(item, tarPath,true);
+        }
+
+        //creat zip
+        ZipHelper.ZipFileDirectory(tempFold, outputPath);
+
+        //delete temp fold
+        FileUtil.DeleteFileOrDirectory(tempFold);
+        
         AssetDatabase.Refresh();
     }
 }
