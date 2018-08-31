@@ -1,64 +1,20 @@
-﻿#if UNITY_EDITOR
+﻿using EditorTools;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
 using UnityEditor.SceneManagement;
+using UnityEngine;
 using UnityEngine.SceneManagement;
-using SevenZip.Compression.LZMA;
-
-public static class EditorExpand
-{
-    public static void SelectedObject<T>(this T t) where T : Object
-    {
-        if (t == null)
-            return;
-
-        Selection.activeObject = t;
-    }
-
-    /// <summary>
-    /// Sets the light map scale.
-    /// </summary>
-    /// <param name="renderers">Renderers.</param>
-    /// <param name="scale">Scale.</param>
-    public static void SetLightMapScale(this Renderer[] renderers,float scale)
-    {
-        if (null == renderers)
-            return;
-
-
-            foreach (var item in renderers)
-            {
-                SerializedObject so = new SerializedObject(item);
-                so.FindProperty("m_ScaleInLightmap").floatValue = scale;
-                so.ApplyModifiedProperties();
-            }
-    }
-
-    /// <summary>
-    /// tar whether is child of go
-    /// </summary>
-    /// <param name="go"></param>
-    /// <param name="tar"></param>
-    /// <returns></returns>
-    public static bool isChild(this Transform go, GameObject tar)
-    {
-        if (null == go || null==tar)
-        {
-            return false;
-        }
-
-        if (go.parent != null && go.parent==tar.transform)
-        {
-            return true;
-        }
-
-        return isChild(go.parent, tar);
-    }
-}
 
 public static class EditorUtil
 {
+    /// <summary>
+    /// 当前选择目录下创建 .asset
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="name"></param>
+    /// <param name="callback"></param>
+    /// <param name="parameters"></param>
+    /// <returns></returns>
     public static ScriptableItem CreatAssetCurPath<T>(string name, System.Action<T, Dictionary<string, object>> callback = null, Dictionary<string, object> parameters = null) where T : ScriptableObject
     {
         Object[] o = Selection.GetFiltered<Object>(SelectionMode.Assets);
@@ -80,12 +36,18 @@ public static class EditorUtil
         ScriptableItem item = new ScriptableItem(assetpath);
         item.Creat<T>(callback, parameters);
 
-        typeList t = item.Load<typeList>();
+        T t = item.Load<T>();
         t.SelectedObject();
 
         return item;
     }
 
+    /// <summary>
+    /// 获取子对象路径
+    /// </summary>
+    /// <param name="go"></param>
+    /// <param name="root"></param>
+    /// <returns></returns>
     public static string GetTranPath(GameObject go,GameObject root=null)
     {
         if (go == null || go==root)
@@ -242,4 +204,3 @@ public static class EditorUtil
         AssetDatabase.Refresh();
     }
 }
-#endif

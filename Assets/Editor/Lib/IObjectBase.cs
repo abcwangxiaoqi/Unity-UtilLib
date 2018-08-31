@@ -1,6 +1,8 @@
-﻿
-public interface IObjectBase : IAssetData, IImport
+﻿namespace EditorTools
 {
-    string Name { get; }
-    string Type { get; }
+    public interface IObjectBase : IAssetData, IImport
+    {
+        string Name { get; }
+        string Type { get; }
+    }
 }

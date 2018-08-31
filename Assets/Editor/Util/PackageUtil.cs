@@ -12,7 +12,7 @@ public static class PackageUtil
     {
         if (Application.platform != RuntimePlatform.Android)
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.Android);
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android,BuildTarget.Android);
         }
 
         string error=BuildPipeline.BuildPlayer(secens, path, BuildTarget.Android, BuildOptions.None);
@@ -28,7 +28,7 @@ public static class PackageUtil
     {
         if (Application.platform != RuntimePlatform.Android)
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.Android);
+            EditorUserBuildSettings.SwitchActiveBuildTarget( BuildTargetGroup.Android,BuildTarget.Android);
         }
 
         string error=BuildPipeline.BuildPlayer(secens, path, BuildTarget.Android, BuildOptions.AcceptExternalModificationsToPlayer);
@@ -43,7 +43,7 @@ public static class PackageUtil
     {
         if (Application.platform != RuntimePlatform.OSXEditor)
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.iOS);
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.iOS,BuildTarget.iOS);
         }
 
         string error = BuildPipeline.BuildPlayer(secens, path, BuildTarget.iOS, BuildOptions.AcceptExternalModificationsToPlayer);

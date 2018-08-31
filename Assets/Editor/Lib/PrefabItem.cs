@@ -5,45 +5,47 @@ using UnityEditor;
 using System.IO;
 using System.Collections.Generic;
 using System;
-
-public class PrefabItem : ObjectBase,IPrefabItem
+namespace EditorTools
 {
-    public PrefabItem(string assetpath)
-        : base(assetpath)
+    public class PrefabItem : ObjectBase, IPrefabItem
     {
-
-    }
-
-    public void CreatPrefab(UnityEngine.Object obj,Action<GameObject,Dictionary<string, object>> callback = null, Dictionary<string, object> parameters = null)
-    {
-        GameObject go = null;
-        if(obj!=null)
+        public PrefabItem(string assetpath)
+            : base(assetpath)
         {
-            go = GameObject.Instantiate(obj) as GameObject;
-        }
-        else
-        {
-            go = new GameObject();
+
         }
 
-        if (callback != null)
+        public void CreatPrefab(UnityEngine.Object obj, Action<GameObject, Dictionary<string, object>> callback = null, Dictionary<string, object> parameters = null)
         {
-            callback(go, parameters);
-        }
+            GameObject go = null;
+            if (obj != null)
+            {
+                go = GameObject.Instantiate(obj) as GameObject;
+            }
+            else
+            {
+                go = new GameObject();
+            }
 
-        string fold = PathHelper.GetFoldByFullName(path);
-        if (!Directory.Exists(fold))
-        {
-            Directory.CreateDirectory(fold);
-        }
+            if (callback != null)
+            {
+                callback(go, parameters);
+            }
 
-        if (File.Exists(path))
-        {
-            File.Delete(path);
-        }
+            string fold = PathHelper.GetFoldByFullName(path);
+            if (!Directory.Exists(fold))
+            {
+                Directory.CreateDirectory(fold);
+            }
 
-        PrefabUtility.CreatePrefab(path, go);
-        GameObject.DestroyImmediate(go);
-        AssetDatabase.Refresh();
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            PrefabUtility.CreatePrefab(path, go);
+            GameObject.DestroyImmediate(go);
+            AssetDatabase.Refresh();
+        }
     }
 }

@@ -1,8 +1,8 @@
-﻿#if UNITY_EDITOR
-using UnityEngine;
-using System.Collections;
-using UnityEditor;
+﻿
+using EditorTools;
 using System.Collections.Generic;
+using UnityEditor;
+using UnityEngine;
 
 public class TextureHandle
 {
@@ -92,4 +92,3 @@ public class TextureHandle
         return size;
     }
 }
-#endif

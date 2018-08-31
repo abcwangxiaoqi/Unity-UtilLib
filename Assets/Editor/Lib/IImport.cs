@@ -1,8 +1,11 @@
 ﻿
 using UnityEditor;
-public interface IImport
+namespace EditorTools
 {
-    AssetImporter importer { get; }
-    void SetAssetbundleName(string name);
-    void Save();
+    public interface IImport
+    {
+        AssetImporter importer { get; }
+        void SetAssetbundleName(string name);
+        void Save();
+    }
 }

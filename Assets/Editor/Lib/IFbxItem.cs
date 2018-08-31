@@ -1,6 +1,9 @@
 ﻿
-public interface IFbxItem:IObjectBase
+namespace EditorTools
 {
-    void SetReadable(bool readable);
+    public interface IFbxItem : IObjectBase
+    {
+        void SetReadable(bool readable);
+    }
 }
 
