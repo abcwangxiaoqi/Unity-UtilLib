@@ -13,14 +13,14 @@ public class Assets
     static Assets()
     {
         // StreamingAssets Path
-        StreamingAssetsPath = Application.streamingAssetsPath + "/";
+        StreamingAssetsPath = UnityEngine.Application.streamingAssetsPath + "/";
 
         // StreamingAssets Url Path
-        if (Application.platform == RuntimePlatform.Android)
+        if (UnityEngine.Application.platform == RuntimePlatform.Android)
         {
             StreamingAssetsUrlPath = StreamingAssetsPath;
         }
-        else if (Application.platform == RuntimePlatform.WebGLPlayer)
+        else if (UnityEngine.Application.platform == RuntimePlatform.WebGLPlayer)
         {
             int tempIndex = StreamingAssetsPath.IndexOf("#");
             if (tempIndex > -1)
@@ -38,7 +38,7 @@ public class Assets
         }
 
         //RuntimeAssets Path
-        RuntimeAssetsPath = Application.persistentDataPath + "/";
+        RuntimeAssetsPath = UnityEngine.Application.persistentDataPath + "/";
 
         //AssetBundle Url Path
         RuntimeAssetsUrlPath = "file:///" + RuntimeAssetsPath;

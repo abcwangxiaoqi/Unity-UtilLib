@@ -33,7 +33,7 @@ public class Loom : MonoBehaviour
         if (!initialized)
         {
 
-            if (!Application.isPlaying)
+            if (!UnityEngine.Application.isPlaying)
                 return;
             initialized = true;
             var g = new GameObject("Loom");

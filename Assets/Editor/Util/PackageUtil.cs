@@ -10,7 +10,7 @@ public static class PackageUtil
     /// <param name="path">导出路径</param>
     public static string PackageApk(string[] secens, string path)
     {
-        if (Application.platform != RuntimePlatform.Android)
+        if (UnityEngine.Application.platform != RuntimePlatform.Android)
         {
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android,BuildTarget.Android);
         }
@@ -26,7 +26,7 @@ public static class PackageUtil
     /// <param name="path">导出路径</param>
     public static string ExportAndroidProject(string[] secens, string path)
     {
-        if (Application.platform != RuntimePlatform.Android)
+        if (UnityEngine.Application.platform != RuntimePlatform.Android)
         {
             EditorUserBuildSettings.SwitchActiveBuildTarget( BuildTargetGroup.Android,BuildTarget.Android);
         }
@@ -41,7 +41,7 @@ public static class PackageUtil
     /// <param name="path">导出路径</param>
     public static string PackageIOS(string[] secens, string path)
     {
-        if (Application.platform != RuntimePlatform.OSXEditor)
+        if (UnityEngine.Application.platform != RuntimePlatform.OSXEditor)
         {
             EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.iOS,BuildTarget.iOS);
         }

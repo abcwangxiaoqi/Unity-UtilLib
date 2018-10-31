@@ -25,7 +25,7 @@ namespace MyDebug
 
         public static void Register()
         {
-            Application.logMessageReceivedThreaded += Application_logMessageReceived;
+            UnityEngine.Application.logMessageReceivedThreaded += Application_logMessageReceived;
         }
 
         static ulong id=0;
@@ -110,7 +110,7 @@ namespace MyDebug
 
         public static void Dispose()
         {
-            Application.logMessageReceivedThreaded -= Application_logMessageReceived;
+            UnityEngine.Application.logMessageReceivedThreaded -= Application_logMessageReceived;
         }
 
         public static void clear()
