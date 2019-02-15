@@ -3,7 +3,6 @@ using SimpleWF;
 
 namespace SimpleWF
 {
-
     public class Demo : MonoBehaviour
     {
         public static bool allow4 = false;
@@ -74,5 +73,4 @@ namespace SimpleWF
             notify();
         }
     }
-
 }
