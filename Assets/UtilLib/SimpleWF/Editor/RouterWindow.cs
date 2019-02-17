@@ -7,7 +7,7 @@ public class RouterWindow : BaseWindow
 {
     class RouterCondition
     {
-        public string condition;
+        public string className;
         public BaseWindow enity;
 
         [System.NonSerialized]
@@ -16,7 +16,7 @@ public class RouterWindow : BaseWindow
 
     List<RouterCondition> conditions = new List<RouterCondition>();
 
-    protected override WindowType windowType
+    public override WindowType windowType
     {
         get
         {
@@ -27,12 +27,90 @@ public class RouterWindow : BaseWindow
     EnityWindow defaultEnity = null;
     Vector2 defaultPos;
 
-    public RouterWindow(Vector2 pos, List<BaseWindow> _windowList, List<string> allEntityClass, List<string> allConditionClass)
-        :base(pos, _windowList, allEntityClass, allConditionClass)
+    public RouterWindow(Vector2 pos, WFEditorWindow _mainWindow)
+        :base(pos, _mainWindow)
     {
         Name = "Router";
         
         addHeight = buttonStyle.lineHeight + 8;
+    
+    }
+
+    public RouterWindow(WindowDataRouter data, WFEditorWindow _mainWindow)
+        : base(data, _mainWindow)
+    {
+        addHeight = buttonStyle.lineHeight + 8;
+
+        if(data.conditions!=null)
+        {
+            foreach (var item in data.conditions)
+            {
+                RouterCondition c = new RouterCondition();
+                c.className = item.className;
+
+                if(item.enity!=null)
+                {
+                    BaseWindow enity = mainWindow.windowList.Find((BaseWindow w) => 
+                    {
+                        return w.Id == item.enity.id;
+                    });
+
+                    if(null == enity)
+                    {
+                        enity = new EnityWindow(item.enity, mainWindow);
+                        mainWindow.windowList.Add(enity);
+                    }
+                    c.enity = enity;
+                }
+
+                conditions.Add(c);
+            }
+        }
+
+        if(data.defaultEnity !=null)
+        {
+            BaseWindow enity = mainWindow.windowList.Find((BaseWindow w) =>
+            {
+                return w.Id == data.defaultEnity.id;
+            });
+
+            if (null == enity)
+            {
+                enity = new EnityWindow(data.defaultEnity, mainWindow);
+                mainWindow.windowList.Add(enity);
+            }
+            defaultEnity = enity as EnityWindow;
+        }
+    }
+
+    public override object GetData()
+    {
+        WindowDataRouter data = new WindowDataRouter();
+        data.id = Id;
+        data.name = Name;
+        data.x = x;
+        data.y = y;
+
+        foreach (var item in conditions)
+        {
+            WindowDataCondition cond = new WindowDataCondition();
+
+            cond.className = item.className;
+
+            if(item.enity!=null)
+            {
+                cond.enity = (WindowDataEnity)item.enity.GetData();
+            }
+
+            data.conditions.Add(cond);
+        }
+
+        if(defaultEnity!=null)
+        {
+            data.defaultEnity = (WindowDataEnity)defaultEnity.GetData();
+        }
+
+        return data;
     }
 
     public override void draw()
@@ -49,13 +127,13 @@ public class RouterWindow : BaseWindow
             if (item.enity == null)
                 continue;
 
-            if (!windowList.Contains(item.enity))
+            if (!mainWindow.windowList.Contains(item.enity))
             {
                 item.enity = null;
                 continue;
             }
 
-            DrawArrow(item.drawPos + position, item.enity.In, Color.green);
+            DrawArrow(item.drawPos + new Vector2(x,y), item.enity.In, Color.green);
         }
         #endregion
 
@@ -63,13 +141,13 @@ public class RouterWindow : BaseWindow
         if (defaultEnity == null)
             return;
 
-        if (!windowList.Contains(defaultEnity))
+        if (!mainWindow.windowList.Contains(defaultEnity))
         {
             defaultEnity = null;
             return;
         }
 
-        DrawArrow(defaultPos + position, defaultEnity.In, Color.green);
+        DrawArrow(defaultPos + new Vector2(x, y), defaultEnity.In, Color.green);
         #endregion
     }    
 
@@ -107,12 +185,12 @@ public class RouterWindow : BaseWindow
             RouterCondition rc = conditions[i];
             GUILayout.BeginHorizontal();
 
-            string c = rc.condition;
-            int selectindex = allConditionClass.IndexOf(c);
-            selectindex = EditorGUILayout.Popup(selectindex, allConditionClass.ToArray(), popupStyle);
+            string c = rc.className;
+            int selectindex = mainWindow.allConditionClass.IndexOf(c);
+            selectindex = EditorGUILayout.Popup(selectindex, mainWindow.allConditionClass.ToArray(), popupStyle);
             if (selectindex >= 0)
             {
-                conditions[i].condition = allConditionClass[selectindex];
+                conditions[i].className = mainWindow.allConditionClass[selectindex];
             }
 
             //删除
@@ -133,13 +211,13 @@ public class RouterWindow : BaseWindow
 
                 menu.AddItem(new GUIContent("New Entity"), false, () =>
                 {
-                    var tempWindow = new EnityWindow(position + new Vector2(50, 50), windowList, allEntityClass, allConditionClass);
-                    windowList.Add(tempWindow);
+                    var tempWindow = new EnityWindow(new Vector2(x+50, y+50), mainWindow);
+                    mainWindow.windowList.Add(tempWindow);
                     rc.enity = tempWindow;
                 });
 
                 List<BaseWindow> selectionList = new List<BaseWindow>();
-                foreach (var item in windowList)
+                foreach (var item in mainWindow.windowList)
                 {
                     if (item is EnityWindow)
                     {
@@ -180,13 +258,13 @@ public class RouterWindow : BaseWindow
 
             menu.AddItem(new GUIContent("New Entity"), false, () =>
             {
-                var tempWindow = new EnityWindow(position + new Vector2(50, 50), windowList, allEntityClass, allConditionClass);
-                windowList.Add(tempWindow);
+                var tempWindow = new EnityWindow(new Vector2(x+50, y+50), mainWindow);
+                mainWindow.windowList.Add(tempWindow);
                 defaultEnity = tempWindow;
             });
 
             List<BaseWindow> selectionList = new List<BaseWindow>();
-            foreach (var item in windowList)
+            foreach (var item in mainWindow.windowList)
             {
                 if (item is EnityWindow)
                 {
@@ -216,7 +294,7 @@ public class RouterWindow : BaseWindow
 
         menu.AddItem(new GUIContent("Delte"), false, () =>
         {
-            windowList.Remove(this);
+            mainWindow.windowList.Remove(this);
         });
 
         menu.ShowAsContext();

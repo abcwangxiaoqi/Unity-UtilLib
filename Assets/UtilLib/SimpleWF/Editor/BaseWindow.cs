@@ -11,18 +11,20 @@ public enum WindowType
 
 public abstract class BaseWindow
 {
+
     protected GUIStyle textStyle = EditorStyles.textField;
     protected GUIStyle buttonStyle = EditorStyles.miniButton;
     protected GUIStyle popupStyle = EditorStyles.popup;
 
-    protected Vector2 position;
+    public float x;
+    public float y;
     protected float height = 100;
     protected float weight = 150;
 
     protected Rect windowRect;
-    protected List<BaseWindow> windowList;
 
-    protected abstract WindowType windowType { get; }
+    protected WFEditorWindow mainWindow;
+    public abstract WindowType windowType { get; }
 
     public int Id { get; private set; }
     public string Name { get; protected set; }
@@ -31,31 +33,28 @@ public abstract class BaseWindow
     {
         get
         {
-            return position + new Vector2(0, height / 2);
+            return new Vector2(x,y) + new Vector2(0, height / 2);
         }
     }
     public Vector2 Out
     {
         get
         {
-            return position + new Vector2(weight, height / 2);
+            return new Vector2(x, y) + new Vector2(weight, height / 2);
         }
     }
 
-    protected List<string> allEntityClass = new List<string>();
-    protected List<string> allConditionClass = new List<string>();
-    public BaseWindow(Vector2 pos, List<BaseWindow> _windowList, List<string> _allEntityClass, List<string> _allConditionClass)
+    public BaseWindow(Vector2 pos, WFEditorWindow _mainWindow)
     {
-        position = pos;
-        windowList = _windowList;
-        allEntityClass = _allEntityClass;
-        allConditionClass = _allConditionClass;
+        x = pos.x;
+        y = pos.y;
+        mainWindow = _mainWindow;
 
         //设置id 从0开始 没有使用的就用
 
         int td = 0;
 
-        while (_windowList.FindIndex((BaseWindow w) =>
+        while (mainWindow.windowList.FindIndex((BaseWindow w) =>
         {
             return w.Id == td;
         }) >= 0)
@@ -66,10 +65,21 @@ public abstract class BaseWindow
         Id = td;
     }
 
+    public BaseWindow(WindowDataBase data, WFEditorWindow _mainWindow)
+    {
+        x = data.x;
+        y = data.y;
+        mainWindow = _mainWindow;
+
+
+        Id = data.id;
+        Name = data.name;
+    }
+
     public virtual void draw()
     {
-        windowRect.x = position.x;
-        windowRect.y = position.y;
+        windowRect.x = x;
+        windowRect.y = y;
         windowRect.width = weight;
         windowRect.height = height;
 
@@ -90,7 +100,8 @@ public abstract class BaseWindow
         //窗体移动位置
         if (curEvent.type == EventType.MouseDrag)
         {
-            position += curEvent.delta;
+            x += curEvent.delta.x;
+            y += curEvent.delta.y;
         }
     }
 
@@ -98,6 +109,9 @@ public abstract class BaseWindow
     {
         return windowRect.Contains(mouseposition);
     }
+
+    public abstract object GetData();
+
 
     protected void DrawArrow(Vector2 from, Vector2 to, Color color)
     {

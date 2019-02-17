@@ -16,6 +16,19 @@ public class EEnity: IEntity
 
     public void execute()
     {
+        Type t = Type.GetType(ClassName);
+        BaseMMEntity entity = Activator.CreateInstance(t) as BaseMMEntity;
+        entity.OnFinish += () => 
+        {
+            if(next!=null)
+            {
+                next.execute();
+            }
+            else
+            {
+                //整个流程结束 抛出
+            }
+        };
 
     }
 }
@@ -33,83 +46,123 @@ public class Router: IEntity
 
     public void execute()
     {
+        bool conditonsFlag = false;
         for (int i = 0; i < conditions.Count; i++)
         {
             Type t = Type.GetType(conditions[i].ClassName);
-            ICondition c = Activator.CreateInstance(t) as ICondition;
+            MCondition c = Activator.CreateInstance(t) as MCondition;
+
+            if(c.execute())
+            {
+                conditonsFlag = true;
+                break;
+            }
+        }
+
+        //条件列表都不符合 执行默认
+        if(!conditonsFlag)
+        {
+            if(defaultNext != null)
+            {
+                defaultNext.execute();
+            }
+            else
+            {
+                //整个流程结束 抛出
+            }
         }
     }
 }
 
 public class WFMain
 {
-    IMMEntity Enter;
+    EEnity Enter;
 
-    public void SetEnter(IMMEntity enter)
+    //成功true  失败false
+    public event Action<bool> OnFinish;
+
+    public bool Running { get; private set; }
+
+    public void SetEnter(EEnity enter)
     {
+        Running = true;
+
         Enter = enter;
     }
 
     public void Start()
     {
-
+        Enter.execute();
     }
 
     public void Stop()
-    { }
+    {
+        Running = false;
+    }
 }
 
 
-public class MMEntity: IMMEntity
+public class MMEntity: BaseMMEntity
 {
-    
 
-    //
-    void star()
+    public override void execute()
     {
-        //notify();
+        throw new NotImplementedException();
     }
 
 
 }
 
-public class new1 : IMMEntity
+public class new1 : BaseMMEntity
 {
 
 
-    //
-    void star()
+    public override void execute()
     {
-        //notify();
+        throw new NotImplementedException();
     }
 
-
-}
-
-public class MMRouter
-{
 
 }
 
 public abstract class BaseMMEntity
 {
+    public event Action OnFinish;
+    
+    public abstract void execute();
 
-}
-
-public interface IMMEntity
-{
-
-}
-
-public interface ICondition
-{
-    bool justify();
-}
-
-public class MMCondition: ICondition
-{
-    public bool justify()
+    protected void Finish()
     {
+        OnFinish.Invoke();
+    }
+
+}
+
+public abstract class MCondition
+{
+
+    IEntity next;
+
+    public bool execute()
+    {
+        bool res = justify();
+
+        if(res)
+        {
+            next.execute();
+        }
+
+        return res;
+    }
+
+    protected abstract bool justify();
+}
+
+public class MMCondition: MCondition
+{
+    protected override bool justify()
+    {
+        //判断条件
         return true;
     }
 }

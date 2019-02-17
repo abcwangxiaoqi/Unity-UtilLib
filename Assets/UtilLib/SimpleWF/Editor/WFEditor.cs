@@ -5,42 +5,41 @@ using UnityEditor;
 using System.Reflection;
 using System;
 
-public class WFEditor :EditorWindow
+public class WFEditorWindow :EditorWindow
 {
     [MenuItem("WF/Open")]
     static void open()
     {
-        var window = EditorWindow.GetWindow<WFEditor>("WF Editor");        
+        var window = EditorWindow.GetWindow<WFEditorWindow>("WF Editor");        
     }
 
 
-    List<string> allEntityClass = new List<string>();
-    List<string> allConditionClass = new List<string>();
-    private void OnEnable()
+    public List<string> allEntityClass { get; private set; }
+    public List<string> allConditionClass { get; private set; }
+
+    //全部
+    public List<BaseWindow> windowList { get; private set; }
+
+    private void Awake()
     {
+        windowList = new List<BaseWindow>();
+
         Assembly _assembly = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp.dll");
         Type[] tys = _assembly.GetTypes();
         
         foreach (var item in tys)
         {
-            if (typeof(IMMEntity).IsAssignableFrom(item) && !item.IsInterface && !item.IsAbstract)
+           
+            if (item.IsSubclassOf(typeof(BaseMMEntity)) && !item.IsInterface && !item.IsAbstract)
             {
                 allEntityClass.Add(item.FullName);
             }
 
-            if (typeof(ICondition).IsAssignableFrom(item) && !item.IsInterface && !item.IsAbstract)
+            if (item.IsSubclassOf(typeof(MCondition)) && !item.IsInterface && !item.IsAbstract)
             {
                 allConditionClass.Add(item.FullName);
             }
         }
-    }
-    
-    //全部
-    List<BaseWindow> windowList = new List<BaseWindow>();
-
-    static void ShowEditor()
-    {
-        WFEditor editor = EditorWindow.GetWindow<WFEditor>();
     }
     
 
@@ -63,12 +62,12 @@ public class WFEditor :EditorWindow
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Add Enity"), false, () =>
                 {
-                    windowList.Add(new EnityWindow(mousePosition,windowList,allEntityClass,allConditionClass));
+                    windowList.Add(new EnityWindow(mousePosition,this));
                 });
 
                 menu.AddItem(new GUIContent("Add Rounter"), false, () =>
                 {
-                    windowList.Add(new RouterWindow( mousePosition,windowList, allEntityClass, allConditionClass));
+                    windowList.Add(new RouterWindow( mousePosition,this));
                 });
                 menu.ShowAsContext();
             }
@@ -116,6 +115,82 @@ public class WFEditor :EditorWindow
         }
         EndWindows();
 
+        if(GUI.changed)
+        {
+            
+        }
+
+        if(GUILayout.Button("save"))
+        {
+            save();
+        }
+
+    }
+
+    void save()
+    {
+        WindowData data = new WindowData();
+        for (int i = 0; i < windowList.Count; i++)
+        {
+            if(windowList[i].windowType == WindowType.Enity)
+            {
+                data.enitylist.Add((WindowDataEnity)windowList[i].GetData());
+            }
+            else
+            {
+                data.routerlist.Add((WindowDataRouter)windowList[i].GetData());
+            }
+        }
+
+        //产生编辑窗口数据
+
+        generateWindowData(data);
+
+
+        //生产运行时数据
+
+        //入口
+        WindowDataEnity entry = data.enitylist.Find((WindowDataEnity e) => 
+        {
+            return e.entry == true;
+        });
+
+
+    }
+
+    void generateWindowData(WindowData data)
+    {
+        List<BaseWindow> list = new List<BaseWindow>();
+
+        foreach (var item in data.enitylist)
+        {
+            //为什么要判断是否存在
+            //因为在构造函数中 回创建所有相关等实例
+            bool exist = windowList.Exists((BaseWindow w) =>
+            {
+                return w.Id == item.id;
+            });
+
+            if (exist)
+                continue;
+
+            windowList.Add(new EnityWindow(item, this));
+        }
+
+        foreach (var item in data.routerlist)
+        {
+            //为什么要判断是否存在
+            //因为在构造函数中 回创建所有相关等实例
+            bool exist = windowList.Exists((BaseWindow w) =>
+            {
+                return w.Id == item.id;
+            });
+
+            if (exist)
+                continue;
+
+            windowList.Add(new RouterWindow(item, this));
+        }
     }
 
     void DrawNodeCurve(Rect start, Rect end, Color color)
