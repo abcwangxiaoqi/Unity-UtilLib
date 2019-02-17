@@ -143,9 +143,10 @@ public class WFEditorWindow :EditorWindow
         }
 
         //产生编辑窗口数据
-
         generateWindowData(data);
 
+
+        //=================================================
 
         //生产运行时数据
 
