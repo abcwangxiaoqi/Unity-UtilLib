@@ -2,12 +2,23 @@
 using UnityEditor;
 using UnityEngine;
 
-public class EnityWindow : BaseWindow
+public class EntityWindow : BaseWindow
 {
-    //是否是入口
-    public bool Entry = false;
+    static GUIStyle EntranceStyle;
 
-    public string ClassName;
+    static EntityWindow()
+    {
+        EntranceStyle = new GUIStyle(UnityEditor.EditorStyles.boldLabel);
+        EntranceStyle.fixedHeight = 25;
+        EntranceStyle.fontSize = 20;
+        EntranceStyle.alignment = TextAnchor.MiddleCenter;
+        EntranceStyle.normal.textColor = Color.green;        
+    }
+
+    //是否是入口
+    public bool isEntrance { get; private set; }
+
+    public string ClassName { get; private set; }
 
     //下一节点
     public BaseWindow next { get; protected set; }
@@ -16,83 +27,45 @@ public class EnityWindow : BaseWindow
     {
         get
         {
-            return WindowType.Enity;
+            return WindowType.Entity;
         }
     }
 
-    public EnityWindow(Vector2 pos, WFEditorWindow _mainWindow)
+    public EntityWindow(Vector2 pos, WFEditorWindow _mainWindow)
         : base(pos, _mainWindow)
     {
-        Name = "Enity";
+        Name = "Entity";
     }
 
-    public EnityWindow(WindowDataEnity data, WFEditorWindow _mainWindow)
-        : base(data, _mainWindow)
+    public EntityWindow(WindowDataEntity itemData, WFEditorWindow _mainWindow)
+        : base(itemData, _mainWindow)
     {
-        if(data.nextEnity!=null)
-        {
-            BaseWindow n = mainWindow.windowList.Find((BaseWindow win) =>
-            {
-                return win.Id == data.nextEnity.id;
-            });
-
-            if(null == n)
-            {
-                n = new EnityWindow(data.nextEnity, mainWindow);
-                mainWindow.windowList.Add(n);
-            }
-
-            next = n;
-        }
-        else if(data.nextRouter!=null)
-        {
-            BaseWindow n = mainWindow.windowList.Find((BaseWindow win) =>
-            {
-                return win.Id == data.nextRouter.id;
-            });
-
-            if (null == n)
-            {
-                n = new RouterWindow(data.nextRouter, mainWindow);
-                mainWindow.windowList.Add(n);
-            }
-
-            next = n;
-        }
+        ClassName = itemData.className;
+        isEntrance = itemData.isEntrance;
+    }
+    
+    public void SetNext(BaseWindow entity)
+    {
+        next = entity;
     }
 
-    public override object GetData()
+    public override WindowDataBase GetData()
     {
-        WindowDataEnity dataEnity = new WindowDataEnity();
-        dataEnity.x = x;
-        dataEnity.y = y;
-        dataEnity.name = Name;
-        dataEnity.id = Id;
+        WindowDataEntity dataEntity = new WindowDataEntity();
+        dataEntity.position = position;
+        dataEntity.name = Name;
+        dataEntity.id = Id;
 
-        dataEnity.className = ClassName;
+        dataEntity.className = ClassName;
 
-        dataEnity.entry = Entry;
+        dataEntity.isEntrance = isEntrance;
 
         if(next!=null)
         {
-            if(dataEnity.nextEnity!=null || dataEnity.nextRouter!=null)
-            {
-                //说明已经设置过下一节点等值了
-                //这里返回 是避免 死循环等情况出现
-                return dataEnity;
-            }
-            
-            if(next.windowType == WindowType.Enity)
-            {
-                dataEnity.nextEnity = (WindowDataEnity)next.GetData();
-            }
-            else
-            {
-                dataEnity.nextRouter = (WindowDataRouter)next.GetData();
-            }
+            dataEntity.next = next.Id;
         }
 
-        return dataEnity;
+        return dataEntity;
     }
 
     public override void draw()
@@ -113,16 +86,7 @@ public class EnityWindow : BaseWindow
     }
 
     protected override void gui(int id)
-    {
-        if(Entry)
-        {
-            GUI.contentColor = Color.green;
-        }
-        else
-        {
-            GUI.contentColor = Color.white;
-        }
-        
+    {        
         base.gui(id);
 
         int selectindex = -1;
@@ -138,6 +102,12 @@ public class EnityWindow : BaseWindow
             ClassName = mainWindow.allEntityClass[selectindex];
         }
 
+        if (isEntrance)
+        {
+            GUILayout.Space(5);
+            GUILayout.Label("Entrance", EntranceStyle);
+        }
+
         GUI.DragWindow();
     }
 
@@ -147,7 +117,7 @@ public class EnityWindow : BaseWindow
 
         menu.AddItem(new GUIContent("Next/New Entity"), false, () =>
         {
-            var tempWindow = new EnityWindow(mouseposition, mainWindow);
+            var tempWindow = new EntityWindow(mouseposition, mainWindow);
             mainWindow.windowList.Add(tempWindow);
             next = tempWindow;
         });
@@ -174,32 +144,41 @@ public class EnityWindow : BaseWindow
             bool select = (next != null) && next.Id == item.Id;
             menu.AddItem(new GUIContent("Next/" + item.Id + " " + item.Name), select, () =>
             {
-                next = item;
+                if(select)
+                {
+                    next = null;
+                }
+                else
+                {
+                    next = item;
+                }                
             });
         }
         #endregion
-
-        menu.AddItem(new GUIContent("Delete Next"), false, () =>
+        
+        if(isEntrance)
+        {//入口函数不能删除
+            menu.AddDisabledItem(new GUIContent("Delte"));
+        }
+        else
         {
-            next = null;
-        });
+            menu.AddItem(new GUIContent("Delte"), false, () =>
+            {
+                mainWindow.windowList.Remove(this);
+            });
+        } 
 
-        menu.AddItem(new GUIContent("Delte"), false, () =>
-        {
-            mainWindow.windowList.Remove(this);
-        });
-
-        menu.AddItem(new GUIContent("Entry"), Entry, () =>
+        menu.AddItem(new GUIContent("Set Entrance"), isEntrance, () =>
         {
             foreach (var item in mainWindow.windowList)
             {
-                if (item is EnityWindow)
+                if (item is EntityWindow)
                 {
-                    (item as EnityWindow).Entry = false;
+                    (item as EntityWindow).isEntrance = false;
                 }
             }
 
-            Entry = true;
+            isEntrance = true;
         });
 
         menu.ShowAsContext();

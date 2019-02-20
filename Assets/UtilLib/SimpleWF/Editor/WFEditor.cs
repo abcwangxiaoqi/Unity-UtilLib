@@ -4,15 +4,51 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 using System;
+using EditorTools;
+
+using Object = UnityEngine.Object;
 
 public class WFEditorWindow :EditorWindow
 {
-    [MenuItem("WF/Open")]
-    static void open()
+    [MenuItem("Assets/EditorWF", true)]
+    static bool ValidateSelection()
     {
-        var window = EditorWindow.GetWindow<WFEditorWindow>("WF Editor");        
+        Object asset = Selection.activeObject;
+
+        return (asset is WindowData);
     }
 
+    [MenuItem("Assets/EditorWF", false, priority = 49)]
+    static void Edit()
+    {
+        Object asset = Selection.activeObject;
+        scriptable = new ScriptableItem(AssetDatabase.GetAssetPath(asset));
+        var window = EditorWindow.GetWindow<WFEditorWindow>(asset.name);
+    }
+
+    [MenuItem("Assets/NewWF", false, priority = 49)]
+    static void New()
+    {
+        EditorUtil.CreatAssetCurPath<WindowData>("NewWf",
+            (WindowData data,Dictionary<string,object> dic) => 
+            {
+                //默认数据 且是 入口实例
+                WindowDataEntity entity = new WindowDataEntity();
+                entity.isEntrance = true;
+                entity.id = 0;
+                entity.position = new Vector2(50, 50);
+                entity.name = "Entity";
+                data.entitylist.Add(entity);
+            });   
+    }
+
+    public static void Open(Object obj)
+    {
+        scriptable = new ScriptableItem(AssetDatabase.GetAssetPath(obj));
+        var window = EditorWindow.GetWindow<WFEditorWindow>(obj.name);
+    }
+
+    static ScriptableItem scriptable;
 
     public List<string> allEntityClass { get; private set; }
     public List<string> allConditionClass { get; private set; }
@@ -20,65 +56,41 @@ public class WFEditorWindow :EditorWindow
     //全部
     public List<BaseWindow> windowList { get; private set; }
 
+    WindowData wdata;
+
     private void Awake()
-    {
+    {     
+        allEntityClass = new List<string>();
+        allConditionClass = new List<string>();
         windowList = new List<BaseWindow>();
 
         Assembly _assembly = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp.dll");
         Type[] tys = _assembly.GetTypes();
         
         foreach (var item in tys)
-        {
-           
-            if (item.IsSubclassOf(typeof(BaseMMEntity)) && !item.IsInterface && !item.IsAbstract)
+        {           
+            if (item.IsSubclassOf(typeof(BaseEntity)) && !item.IsInterface && !item.IsAbstract)
             {
                 allEntityClass.Add(item.FullName);
             }
 
-            if (item.IsSubclassOf(typeof(MCondition)) && !item.IsInterface && !item.IsAbstract)
+            if (item.IsSubclassOf(typeof(BaseCondition)) && !item.IsInterface && !item.IsAbstract)
             {
                 allConditionClass.Add(item.FullName);
             }
         }
-    }
-    
+        
+        generateWindowData();
+    }    
 
-    private void ShowMenu()
-    {     
-        // 添加一个新节点
-        if (Event.current.type == EventType.MouseDown)
-        {
-            curSelect = windowList.Find((BaseWindow w) =>
-            {
-                return w.isClick(mousePosition);
-            });
-
-            if(curSelect!=null)
-            {
-                curSelect.rightMouseDraw(mousePosition);
-            }
-            else
-            {
-                GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("Add Enity"), false, () =>
-                {
-                    windowList.Add(new EnityWindow(mousePosition,this));
-                });
-
-                menu.AddItem(new GUIContent("Add Rounter"), false, () =>
-                {
-                    windowList.Add(new RouterWindow( mousePosition,this));
-                });
-                menu.ShowAsContext();
-            }
-        }   
-    }
-    
     BaseWindow curSelect = null;
     Event curEvent;
     Vector2 mousePosition;
     void OnGUI()
-    {
+    {        
+        if (windowList == null)
+            return;
+
         curEvent = Event.current;
         mousePosition = curEvent.mousePosition;
 
@@ -106,6 +118,8 @@ public class WFEditorWindow :EditorWindow
             }
         }
 
+        if (windowList == null)
+            return;
 
         // 注意：必须在  BeginWindows(); 和 EndWindows(); 之间 调用 GUI.Window 才能显示
         BeginWindows();
@@ -115,83 +129,163 @@ public class WFEditorWindow :EditorWindow
         }
         EndWindows();
 
-        if(GUI.changed)
+
+        GUI.BeginGroup(new Rect(20, 20, 100, 200));
+
+        GUI.Box(new Rect(0, 0, 100, 200), "");
+        GUILayout.Label("ShareData");
+
+        GUI.EndGroup();
+    }
+
+    //关闭窗口时 保存数据
+    private void OnDisable()
+    {
+        save();
+        AssetDatabase.Refresh();
+    }
+
+    private void OnLostFocus()
+    {
+        save();
+    }
+
+    private void OnProjectChange()
+    {
+        save();
+        AssetDatabase.Refresh();
+    }
+
+    private void ShowMenu()
+    {
+        // 添加一个新节点
+        if (Event.current.type == EventType.MouseDown)
         {
-            
+            curSelect = windowList.Find((BaseWindow w) =>
+            {
+                return w.isClick(mousePosition);
+            });
+
+            if (curSelect != null)
+            {
+                curSelect.rightMouseDraw(mousePosition);
+            }
+            else
+            {
+                GenericMenu menu = new GenericMenu();
+                menu.AddItem(new GUIContent("Add Enity"), false, () =>
+                {
+                    windowList.Add(new EntityWindow(mousePosition, this));
+                });
+
+                menu.AddItem(new GUIContent("Add Rounter"), false, () =>
+                {
+                    windowList.Add(new RouterWindow(mousePosition, this));
+                });
+                menu.ShowAsContext();
+            }
+        }
+    }
+
+    void generateWindowData()
+    {
+        wdata = scriptable.Load<WindowData>();
+
+        foreach (var item in wdata.entitylist)
+        {
+            windowList.Add(new EntityWindow(item, this));
         }
 
-        if(GUILayout.Button("save"))
+        foreach (var item in wdata.routerlist)
         {
-            save();
-        }
+            windowList.Add(new RouterWindow(item, this));
+        }       
 
+        //设置下一级
+        foreach (var item in windowList)
+        {
+            WindowDataBase itemdata = wdata.Get(item.Id);
+
+            if(itemdata.type == WindowType.Entity)
+            {
+                WindowDataEntity edata = itemdata as WindowDataEntity;
+               
+                if (edata.next>=0)
+                {
+                    BaseWindow next = FindWindow(edata.next);
+
+                    (item as EntityWindow).SetNext(next);
+                }
+            }
+            else
+            {
+                WindowDataRouter edata = itemdata as WindowDataRouter;
+                RouterWindow win = item as RouterWindow;
+
+                //设置默认
+                if (edata.defaultEntity >= 0)
+                {
+                    EntityWindow def = FindWindow<EntityWindow>(edata.defaultEntity);
+                }
+
+                //设置条件
+                List<RouterCondition> conditions = new List<RouterCondition>();
+                foreach (var con in edata.conditions)
+                {
+                    RouterCondition rcon = new RouterCondition();
+                    rcon.className = con.className;
+                    rcon.entity = FindWindow<EntityWindow>(con.entity);
+                    conditions.Add(rcon);
+                }
+                win.SetConditions(conditions);
+            }
+        }
     }
 
     void save()
     {
-        WindowData data = new WindowData();
+        if (windowList == null)
+            return;
+
+        wdata.entitylist.Clear();
+        wdata.routerlist.Clear();
+
         for (int i = 0; i < windowList.Count; i++)
         {
-            if(windowList[i].windowType == WindowType.Enity)
+            if (windowList[i].windowType == WindowType.Entity)
             {
-                data.enitylist.Add((WindowDataEnity)windowList[i].GetData());
+                wdata.entitylist.Add((WindowDataEntity)windowList[i].GetData());
             }
             else
             {
-                data.routerlist.Add((WindowDataRouter)windowList[i].GetData());
+                wdata.routerlist.Add((WindowDataRouter)windowList[i].GetData());
             }
         }
 
-        //产生编辑窗口数据
-        generateWindowData(data);
-
-
-        //=================================================
-
-        //生产运行时数据
-
-        //入口
-        WindowDataEnity entry = data.enitylist.Find((WindowDataEnity e) => 
-        {
-            return e.entry == true;
-        });
-
-
+        scriptable.SaveAsset(wdata);
     }
 
-    void generateWindowData(WindowData data)
+    BaseWindow FindWindow(int id)
     {
-        List<BaseWindow> list = new List<BaseWindow>();
-
-        foreach (var item in data.enitylist)
+        BaseWindow res = windowList.Find((BaseWindow w) =>
         {
-            //为什么要判断是否存在
-            //因为在构造函数中 回创建所有相关等实例
-            bool exist = windowList.Exists((BaseWindow w) =>
-            {
-                return w.Id == item.id;
-            });
+            return w.Id == id;
+        });
+        return res;
+    }
 
-            if (exist)
-                continue;
-
-            windowList.Add(new EnityWindow(item, this));
-        }
-
-        foreach (var item in data.routerlist)
+    T FindWindow<T>(int id)
+        where T : BaseWindow
+    {
+        BaseWindow res = windowList.Find((BaseWindow w) =>
         {
-            //为什么要判断是否存在
-            //因为在构造函数中 回创建所有相关等实例
-            bool exist = windowList.Exists((BaseWindow w) =>
-            {
-                return w.Id == item.id;
-            });
+            return w.Id == id;
+        });
 
-            if (exist)
-                continue;
+        if (res == null)
+            return null;
 
-            windowList.Add(new RouterWindow(item, this));
-        }
+        return res as T;
     }
 
     void DrawNodeCurve(Rect start, Rect end, Color color)

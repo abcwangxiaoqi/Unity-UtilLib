@@ -3,15 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+public class RouterCondition
+{
+    public string className;
+    public EntityWindow entity;
+    public Vector2 drawPos;
+}
+
 public class RouterWindow : BaseWindow
 {
-    class RouterCondition
+    static GUIStyle linkStyle;
+    static RouterWindow()
     {
-        public string className;
-        public BaseWindow enity;
-
-        [System.NonSerialized]
-        public Vector2 drawPos;
+        linkStyle = new GUIStyle(UnityEditor.EditorStyles.boldLabel);
+        linkStyle.fixedHeight = 10;
+        linkStyle.fontSize = 8;
+        linkStyle.alignment = TextAnchor.MiddleCenter;
+        linkStyle.normal.textColor = Color.green;
+        linkStyle.fixedWidth = 10;
     }
 
     List<RouterCondition> conditions = new List<RouterCondition>();
@@ -24,7 +33,7 @@ public class RouterWindow : BaseWindow
         }
     }
 
-    EnityWindow defaultEnity = null;
+    EntityWindow defaultEntity = null;
     Vector2 defaultPos;
 
     public RouterWindow(Vector2 pos, WFEditorWindow _mainWindow)
@@ -33,63 +42,33 @@ public class RouterWindow : BaseWindow
         Name = "Router";
         
         addHeight = buttonStyle.lineHeight + 8;
-    
+        
     }
 
-    public RouterWindow(WindowDataRouter data, WFEditorWindow _mainWindow)
-        : base(data, _mainWindow)
+    public RouterWindow(WindowDataRouter itemData, WFEditorWindow _mainWindow)
+        : base(itemData, _mainWindow)
     {
-        addHeight = buttonStyle.lineHeight + 8;
-
-        if(data.conditions!=null)
-        {
-            foreach (var item in data.conditions)
-            {
-                RouterCondition c = new RouterCondition();
-                c.className = item.className;
-
-                if(item.enity!=null)
-                {
-                    BaseWindow enity = mainWindow.windowList.Find((BaseWindow w) => 
-                    {
-                        return w.Id == item.enity.id;
-                    });
-
-                    if(null == enity)
-                    {
-                        enity = new EnityWindow(item.enity, mainWindow);
-                        mainWindow.windowList.Add(enity);
-                    }
-                    c.enity = enity;
-                }
-
-                conditions.Add(c);
-            }
-        }
-
-        if(data.defaultEnity !=null)
-        {
-            BaseWindow enity = mainWindow.windowList.Find((BaseWindow w) =>
-            {
-                return w.Id == data.defaultEnity.id;
-            });
-
-            if (null == enity)
-            {
-                enity = new EnityWindow(data.defaultEnity, mainWindow);
-                mainWindow.windowList.Add(enity);
-            }
-            defaultEnity = enity as EnityWindow;
-        }
+        addHeight = buttonStyle.lineHeight + 8;        
     }
 
-    public override object GetData()
+    public void SetDefault(EntityWindow defEntity,Vector2 defPos)
+    {
+        defaultEntity = defEntity;
+        defaultPos = defPos;
+    }
+
+    public void SetConditions(List<RouterCondition> conditionEntities)
+    {
+        conditions = conditionEntities;
+        height += addHeight* conditionEntities.Count;
+    }
+
+    public override WindowDataBase GetData()
     {
         WindowDataRouter data = new WindowDataRouter();
         data.id = Id;
         data.name = Name;
-        data.x = x;
-        data.y = y;
+        data.position = position;
 
         foreach (var item in conditions)
         {
@@ -97,18 +76,18 @@ public class RouterWindow : BaseWindow
 
             cond.className = item.className;
 
-            if(item.enity!=null)
+            if(item.entity!=null)
             {
-                cond.enity = (WindowDataEnity)item.enity.GetData();
+                cond.entity = item.entity.Id;
             }
 
             data.conditions.Add(cond);
         }
 
-        if(defaultEnity!=null)
+        if(defaultEntity!=null)
         {
-            data.defaultEnity = (WindowDataEnity)defaultEnity.GetData();
-        }
+            data.defaultEntity = defaultEntity.Id;
+        }       
 
         return data;
     }
@@ -124,30 +103,30 @@ public class RouterWindow : BaseWindow
         {
             RouterCondition item = conditions[i];
 
-            if (item.enity == null)
+            if (item.entity == null)
                 continue;
 
-            if (!mainWindow.windowList.Contains(item.enity))
+            if (!mainWindow.windowList.Contains(item.entity))
             {
-                item.enity = null;
+                item.entity = null;
                 continue;
             }
 
-            DrawArrow(item.drawPos + new Vector2(x,y), item.enity.In, Color.green);
+            DrawArrow(item.drawPos + position, item.entity.In, Color.green);
         }
         #endregion
 
         #region default
-        if (defaultEnity == null)
+        if (defaultEntity == null)
             return;
 
-        if (!mainWindow.windowList.Contains(defaultEnity))
+        if (!mainWindow.windowList.Contains(defaultEntity))
         {
-            defaultEnity = null;
+            defaultEntity = null;
             return;
         }
 
-        DrawArrow(defaultPos + new Vector2(x, y), defaultEnity.In, Color.green);
+        DrawArrow(defaultPos + position, defaultEntity.In, Color.green);
         #endregion
     }    
 
@@ -211,34 +190,59 @@ public class RouterWindow : BaseWindow
 
                 menu.AddItem(new GUIContent("New Entity"), false, () =>
                 {
-                    var tempWindow = new EnityWindow(new Vector2(x+50, y+50), mainWindow);
+                    var tempWindow = new EntityWindow(new Vector2(50, 50)+position, mainWindow);
                     mainWindow.windowList.Add(tempWindow);
-                    rc.enity = tempWindow;
+                    rc.entity = tempWindow;
                 });
 
-                List<BaseWindow> selectionList = new List<BaseWindow>();
+                List<EntityWindow> selectionList = new List<EntityWindow>();
                 foreach (var item in mainWindow.windowList)
                 {
-                    if (item is EnityWindow)
+                    if (item.windowType == WindowType.Entity)
                     {
-                        selectionList.Add(item);
+                        selectionList.Add(item as EntityWindow);
                     }
                 }
 
                 foreach (var item in selectionList)
                 {
-                    bool select = (rc.enity != null) && rc.enity.Id == item.Id;
+                    bool select = (rc.entity != null) && rc.entity.Id == item.Id;
                     menu.AddItem(new GUIContent(item.Id + " " + item.Name), select, () =>
                     {
-                        rc.enity = item;
+                        if(select)
+                        {
+                            rc.entity = null;
+                        }
+                        else
+                        {
+                            rc.entity = item;
+                        }                        
                     });
                 }
 
                 menu.ShowAsContext();
-
-                rc.drawPos = rect.position + new Vector2(rect.width, rect.height / 2);
             }
+           
+
             GUI.color = Color.white;
+            
+            if(rc.entity == null)
+            {
+                linkStyle.normal.textColor = Color.gray;
+            }
+            else
+            {
+                linkStyle.normal.textColor = Color.green;
+            }
+
+            MyEditorLayout.Label("o", linkStyle, out rect);
+
+            //有的时候 rect会为0，0，1，1
+            if (rect.position != Vector2.zero)
+            {
+                rc.drawPos.x = rect.position.x + rect.width;
+                rc.drawPos.y = rect.position.y + rect.height / 2;
+            }
 
             GUILayout.EndHorizontal();
         }
@@ -258,15 +262,15 @@ public class RouterWindow : BaseWindow
 
             menu.AddItem(new GUIContent("New Entity"), false, () =>
             {
-                var tempWindow = new EnityWindow(new Vector2(x+50, y+50), mainWindow);
+                var tempWindow = new EntityWindow(new Vector2(50, 50)+position, mainWindow);
                 mainWindow.windowList.Add(tempWindow);
-                defaultEnity = tempWindow;
+                defaultEntity = tempWindow;
             });
 
             List<BaseWindow> selectionList = new List<BaseWindow>();
             foreach (var item in mainWindow.windowList)
             {
-                if (item is EnityWindow)
+                if (item is EntityWindow)
                 {
                     selectionList.Add(item);
                 }
@@ -274,17 +278,43 @@ public class RouterWindow : BaseWindow
 
             foreach (var item in selectionList)
             {
-                bool select = (defaultEnity != null) && defaultEnity.Id == item.Id;
+                bool select = (defaultEntity != null) && defaultEntity.Id == item.Id;
                 menu.AddItem(new GUIContent(item.Id + " " + item.Name), select, () =>
                 {
-                    defaultEnity = item as EnityWindow;
+                    if (select)
+                    {
+                        defaultEntity = null;
+                    }
+                    else
+                    {
+                        defaultEntity = item as EntityWindow;
+                    }                    
                 });
-            }
+            }            
 
             menu.ShowAsContext();
-            defaultPos = rect.position + new Vector2(rect.width, rect.height / 2);
         }
+
+        if (defaultEntity == null)
+        {
+            linkStyle.normal.textColor = Color.gray;
+        }
+        else
+        {
+            linkStyle.normal.textColor = Color.green;
+        }
+
+        MyEditorLayout.Label("o", linkStyle, out rect);
+
+        //有的时候 rect会为0，0，1，1
+        if (rect.position!=Vector2.zero)
+        {
+            defaultPos.x = rect.position.x + rect.width;
+            defaultPos.y = rect.position.y + rect.height / 2;
+        }     
+
         GUI.color = Color.white;
+
         GUILayout.EndHorizontal();
     }
 
@@ -303,6 +333,20 @@ public class RouterWindow : BaseWindow
 
 public static class MyEditorLayout
 {
+    public static void Label(string txt,out Rect rect)
+    {
+        GUIContent content = new GUIContent(txt);
+        rect = GUILayoutUtility.GetRect(content, EditorStyles.label);
+        GUI.Label(rect, txt, EditorStyles.label);
+    }
+
+    public static void Label(string txt, GUIStyle style, out Rect rect)
+    {
+        GUIContent content = new GUIContent(txt);
+        rect = GUILayoutUtility.GetRect(content, style);
+        GUI.Label(rect, txt, style);
+    }
+
     //封装一下这样可以拿到button的Rect
     public static bool Button(string txt, GUIStyle style, out Rect rect)
     {

@@ -1,5 +1,6 @@
 ﻿using EditorTools;
 using System.Collections.Generic;
+using System.IO;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -31,9 +32,17 @@ public static class EditorUtil
             assetpath = assetpath.Replace("/" + filename, null);
         }
 
-        assetpath += "/" + name + ".asset";
+        string path = assetpath+ "/" + name + ".asset";
 
-        ScriptableItem item = new ScriptableItem(assetpath);
+        int num = 1;
+        while(File.Exists(path))
+        {
+            path = assetpath + "/" + name + num+ ".asset";
+
+            num++;
+        }
+
+        ScriptableItem item = new ScriptableItem(path);
         item.Creat<T>(callback, parameters);
 
         T t = item.Load<T>();
