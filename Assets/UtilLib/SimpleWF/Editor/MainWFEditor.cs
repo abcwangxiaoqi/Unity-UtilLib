@@ -9,48 +9,28 @@ using System;
 public class MainWFEditor : Editor {
 
     MainWF Target;
-    List<string> ShareDataList = new List<string>();
 
     private void Awake()
     {
         Target = target as MainWF;
     }
 
-    private void OnEnable()
-    {      
-        ShareDataList.Clear();
-
-        Assembly assembly = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp.dll");
-        Type[] tys = assembly.GetTypes();
-
-        ShareDataList.Add("None");
-        foreach (var item in tys)
-        {
-            if (item.IsSubclassOf(typeof(SharedData)) && !item.IsInterface && !item.IsAbstract)
-            {
-                ShareDataList.Add(item.FullName);
-            }
-        }
-        
-        selectIndex = ShareDataList.IndexOf(Target.shareData);
-    }
-
     int selectIndex = 0;
     public override void OnInspectorGUI()
     {
-        base.OnInspectorGUI();
-        
-        selectIndex = EditorGUILayout.Popup(selectIndex, ShareDataList.ToArray());
+        //EditorGUI.BeginDisabledGroup(true);
 
-        if(selectIndex>0)
+        base.OnInspectorGUI();
+
+        //EditorGUI.EndDisabledGroup();
+
+        if(Application.isPlaying)
         {
-            Target.shareData = ShareDataList[selectIndex];
+            if(GUILayout.Button("Graph"))
+            {
+                RuntimeWFEditorWindow.Open(Target);
+            }
         }
-        else
-        {
-            Target.shareData = null;
-        }
-        
 
         // 保存
         if (GUI.changed)

@@ -1,24 +1,31 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
 public class EntityWindow : BaseWindow
 {
-    static GUIStyle EntranceStyle;
+    static List<string> allEntityClass = new List<string>();
 
     static EntityWindow()
     {
-        EntranceStyle = new GUIStyle(UnityEditor.EditorStyles.boldLabel);
-        EntranceStyle.fixedHeight = 25;
-        EntranceStyle.fontSize = 20;
-        EntranceStyle.alignment = TextAnchor.MiddleCenter;
-        EntranceStyle.normal.textColor = Color.green;        
+        Assembly _assembly = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp.dll");
+        Type[] tys = _assembly.GetTypes();
+
+        foreach (var item in tys)
+        {
+            if (item.IsSubclassOf(typeof(BaseEntity)) && !item.IsInterface && !item.IsAbstract)
+            {
+                allEntityClass.Add(item.FullName);
+            }
+        }
     }
 
     //是否是入口
     public bool isEntrance { get; private set; }
 
-    public string ClassName { get; private set; }
+    protected string ClassName { get; private set; }
 
     //下一节点
     public BaseWindow next { get; protected set; }
@@ -31,14 +38,14 @@ public class EntityWindow : BaseWindow
         }
     }
 
-    public EntityWindow(Vector2 pos, WFEditorWindow _mainWindow)
-        : base(pos, _mainWindow)
+    public EntityWindow(Vector2 pos, List<BaseWindow> _windowList)
+        : base(pos, _windowList)
     {
         Name = "Entity";
     }
 
-    public EntityWindow(WindowDataEntity itemData, WFEditorWindow _mainWindow)
-        : base(itemData, _mainWindow)
+    public EntityWindow(WindowDataEntity itemData, List<BaseWindow> _windowList)
+        : base(itemData, _windowList)
     {
         ClassName = itemData.className;
         isEntrance = itemData.isEntrance;
@@ -75,7 +82,7 @@ public class EntityWindow : BaseWindow
         //画线
         if (next != null)
         {
-            if (!mainWindow.windowList.Contains(next))
+            if (!windowList.Contains(next))
             {
                 next = null;
                 return;
@@ -86,26 +93,25 @@ public class EntityWindow : BaseWindow
     }
 
     protected override void gui(int id)
-    {        
+    {     
         base.gui(id);
 
-        int selectindex = -1;
+        int classIndex = -1;
+        classIndex = allEntityClass.IndexOf(ClassName);
 
-        if (!string.IsNullOrEmpty(ClassName))
-        {
-            selectindex = mainWindow.allEntityClass.IndexOf(ClassName);
-        }
+        EditorGUI.BeginDisabledGroup(mode == Mode.Runtime);      
+        classIndex = EditorGUILayout.Popup(classIndex, allEntityClass.ToArray(), popupStyle);
+        EditorGUI.EndDisabledGroup();
 
-        selectindex = EditorGUILayout.Popup(selectindex, mainWindow.allEntityClass.ToArray(), popupStyle);
-        if (selectindex >= 0)
+        if (classIndex >= 0)
         {
-            ClassName = mainWindow.allEntityClass[selectindex];
+            ClassName = allEntityClass[classIndex];
         }
 
         if (isEntrance)
         {
             GUILayout.Space(5);
-            GUILayout.Label("Entrance", EntranceStyle);
+            GUILayout.Label("Entrance", BigLabelStyle);
         }
 
         GUI.DragWindow();
@@ -117,22 +123,22 @@ public class EntityWindow : BaseWindow
 
         menu.AddItem(new GUIContent("Next/New Entity"), false, () =>
         {
-            var tempWindow = new EntityWindow(mouseposition, mainWindow);
-            mainWindow.windowList.Add(tempWindow);
+            var tempWindow = new EntityWindow(mouseposition, windowList);
+            windowList.Add(tempWindow);
             next = tempWindow;
         });
 
         menu.AddItem(new GUIContent("Next/New Condition"), false, () =>
         {
-            var tempWindow = new RouterWindow(mouseposition, mainWindow);
-            mainWindow.windowList.Add(tempWindow);
+            var tempWindow = new RouterWindow(mouseposition, windowList);
+            windowList.Add(tempWindow);
             next = tempWindow;
         });
 
         #region 选择下一个
         List<BaseWindow> selectionList = new List<BaseWindow>();
 
-        foreach (var item in mainWindow.windowList)
+        foreach (var item in windowList)
         {
             if (item == this)
                 continue;
@@ -164,13 +170,13 @@ public class EntityWindow : BaseWindow
         {
             menu.AddItem(new GUIContent("Delte"), false, () =>
             {
-                mainWindow.windowList.Remove(this);
+                windowList.Remove(this);
             });
         } 
 
         menu.AddItem(new GUIContent("Set Entrance"), isEntrance, () =>
         {
-            foreach (var item in mainWindow.windowList)
+            foreach (var item in windowList)
             {
                 if (item is EntityWindow)
                 {

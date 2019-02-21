@@ -1,14 +1,142 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
-using System.Reflection;
+﻿using EditorTools;
 using System;
-using EditorTools;
-
+using System.Collections.Generic;
+using System.Reflection;
+using UnityEditor;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
-public class WFEditorWindow :EditorWindow
+public class WFWindow: EditorWindow
+{
+    //全部
+    protected List<BaseWindow> windowList=new List<BaseWindow>();
+
+    protected FixedWindow fixedWindow;
+
+    protected virtual void Awake()
+    {
+
+    }
+
+    protected virtual void OnGUI()
+    {
+        if (windowList == null)
+            return;
+
+        // 注意：必须在  BeginWindows(); 和 EndWindows(); 之间 调用 GUI.Window 才能显示
+        BeginWindows();
+
+        fixedWindow.draw();
+
+        for (int i = 0; i < windowList.Count; i++)
+        {
+            windowList[i].draw();
+        }
+
+        EndWindows();
+    }
+
+    protected virtual void OnEnable()
+    {
+
+    }
+
+    protected virtual void OnDisable()
+    {
+
+    }
+
+    protected virtual void OnLostFocus()
+    {
+
+    }
+
+    protected virtual void OnProjectChange()
+    {
+
+    }
+
+    BaseWindow FindWindow(int id)
+    {
+        BaseWindow res = windowList.Find((BaseWindow w) =>
+        {
+            return w.Id == id;
+        });
+        return res;
+    }
+
+    T FindWindow<T>(int id)
+        where T : BaseWindow
+    {
+        BaseWindow res = windowList.Find((BaseWindow w) =>
+        {
+            return w.Id == id;
+        });
+
+        if (res == null)
+            return null;
+
+        return res as T;
+    }
+
+    protected void generateWindowData(WindowData windowData)
+    {
+        fixedWindow = new FixedWindow(windowData.shareData);
+
+        foreach (var item in windowData.entitylist)
+        {
+            windowList.Add(new EntityWindow(item, windowList));
+        }
+
+        foreach (var item in windowData.routerlist)
+        {
+            windowList.Add(new RouterWindow(item, windowList));
+        }
+
+        //设置下一级
+        foreach (var item in windowList)
+        {
+            WindowDataBase itemdata = windowData.Get(item.Id);
+
+            if (itemdata.type == WindowType.Entity)
+            {
+                WindowDataEntity edata = itemdata as WindowDataEntity;
+
+                if (edata.next >= 0)
+                {
+                    BaseWindow next = FindWindow(edata.next);
+
+                    (item as EntityWindow).SetNext(next);
+                }
+            }
+            else
+            {
+                WindowDataRouter edata = itemdata as WindowDataRouter;
+                RouterWindow win = item as RouterWindow;
+
+                //设置默认
+                if (edata.defaultEntity >= 0)
+                {
+                    EntityWindow def = FindWindow<EntityWindow>(edata.defaultEntity);
+                    win.SetDefault(def);
+                }
+
+                //设置条件
+                List<RouterCondition> conditions = new List<RouterCondition>();
+                foreach (var con in edata.conditions)
+                {
+                    RouterCondition rcon = new RouterCondition();
+                    rcon.className = con.className;
+                    rcon.entity = FindWindow<EntityWindow>(con.entity);
+                    conditions.Add(rcon);
+                }
+                win.SetConditions(conditions);
+            }
+        }
+    }
+}
+
+public class WFEditorWindow : WFWindow
 {
     [MenuItem("Assets/EditorWF", true)]
     static bool ValidateSelection()
@@ -50,47 +178,22 @@ public class WFEditorWindow :EditorWindow
 
     static ScriptableItem scriptable;
 
-    public List<string> allEntityClass { get; private set; }
-    public List<string> allConditionClass { get; private set; }
-
-    //全部
-    public List<BaseWindow> windowList { get; private set; }
-
     WindowData wdata;
 
-    private void Awake()
-    {     
-        allEntityClass = new List<string>();
-        allConditionClass = new List<string>();
+    protected override void Awake()
+    {       
         windowList = new List<BaseWindow>();
 
-        Assembly _assembly = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp.dll");
-        Type[] tys = _assembly.GetTypes();
-        
-        foreach (var item in tys)
-        {           
-            if (item.IsSubclassOf(typeof(BaseEntity)) && !item.IsInterface && !item.IsAbstract)
-            {
-                allEntityClass.Add(item.FullName);
-            }
+        wdata = scriptable.Load<WindowData>();
 
-            if (item.IsSubclassOf(typeof(BaseCondition)) && !item.IsInterface && !item.IsAbstract)
-            {
-                allConditionClass.Add(item.FullName);
-            }
-        }
-        
-        generateWindowData();
+        generateWindowData(wdata);
     }    
 
     BaseWindow curSelect = null;
     Event curEvent;
     Vector2 mousePosition;
-    void OnGUI()
-    {        
-        if (windowList == null)
-            return;
-
+    protected override void OnGUI()
+    {
         curEvent = Event.current;
         mousePosition = curEvent.mousePosition;
 
@@ -112,45 +215,28 @@ public class WFEditorWindow :EditorWindow
             }
 
             //窗体移动位置
-            if(curSelect!=null)
+            if (curSelect != null)
             {
                 curSelect.leftMouseDraw(curEvent);
             }
         }
 
-        if (windowList == null)
-            return;
-
-        // 注意：必须在  BeginWindows(); 和 EndWindows(); 之间 调用 GUI.Window 才能显示
-        BeginWindows();
-        for (int i = 0; i < windowList.Count; i++)
-        {
-            windowList[i].draw();
-        }
-        EndWindows();
-
-
-        GUI.BeginGroup(new Rect(20, 20, 100, 200));
-
-        GUI.Box(new Rect(0, 0, 100, 200), "");
-        GUILayout.Label("ShareData");
-
-        GUI.EndGroup();
+        base.OnGUI();
     }
 
     //关闭窗口时 保存数据
-    private void OnDisable()
+    protected override void OnDisable()
     {
         save();
         AssetDatabase.Refresh();
     }
 
-    private void OnLostFocus()
+    protected override void OnLostFocus()
     {
         save();
     }
 
-    private void OnProjectChange()
+    protected override void OnProjectChange()
     {
         save();
         AssetDatabase.Refresh();
@@ -159,7 +245,7 @@ public class WFEditorWindow :EditorWindow
     private void ShowMenu()
     {
         // 添加一个新节点
-        if (Event.current.type == EventType.MouseDown)
+        if (curEvent.type == EventType.MouseDown)
         {
             curSelect = windowList.Find((BaseWindow w) =>
             {
@@ -175,72 +261,17 @@ public class WFEditorWindow :EditorWindow
                 GenericMenu menu = new GenericMenu();
                 menu.AddItem(new GUIContent("Add Enity"), false, () =>
                 {
-                    windowList.Add(new EntityWindow(mousePosition, this));
+                    windowList.Add(new EntityWindow(mousePosition, windowList));
                 });
 
                 menu.AddItem(new GUIContent("Add Rounter"), false, () =>
                 {
-                    windowList.Add(new RouterWindow(mousePosition, this));
+                    windowList.Add(new RouterWindow(mousePosition, windowList));
                 });
                 menu.ShowAsContext();
             }
         }
-    }
-
-    void generateWindowData()
-    {
-        wdata = scriptable.Load<WindowData>();
-
-        foreach (var item in wdata.entitylist)
-        {
-            windowList.Add(new EntityWindow(item, this));
-        }
-
-        foreach (var item in wdata.routerlist)
-        {
-            windowList.Add(new RouterWindow(item, this));
-        }       
-
-        //设置下一级
-        foreach (var item in windowList)
-        {
-            WindowDataBase itemdata = wdata.Get(item.Id);
-
-            if(itemdata.type == WindowType.Entity)
-            {
-                WindowDataEntity edata = itemdata as WindowDataEntity;
-               
-                if (edata.next>=0)
-                {
-                    BaseWindow next = FindWindow(edata.next);
-
-                    (item as EntityWindow).SetNext(next);
-                }
-            }
-            else
-            {
-                WindowDataRouter edata = itemdata as WindowDataRouter;
-                RouterWindow win = item as RouterWindow;
-
-                //设置默认
-                if (edata.defaultEntity >= 0)
-                {
-                    EntityWindow def = FindWindow<EntityWindow>(edata.defaultEntity);
-                }
-
-                //设置条件
-                List<RouterCondition> conditions = new List<RouterCondition>();
-                foreach (var con in edata.conditions)
-                {
-                    RouterCondition rcon = new RouterCondition();
-                    rcon.className = con.className;
-                    rcon.entity = FindWindow<EntityWindow>(con.entity);
-                    conditions.Add(rcon);
-                }
-                win.SetConditions(conditions);
-            }
-        }
-    }
+    }    
 
     void save()
     {
@@ -249,6 +280,7 @@ public class WFEditorWindow :EditorWindow
 
         wdata.entitylist.Clear();
         wdata.routerlist.Clear();
+        wdata.shareData = fixedWindow.shareData;
 
         for (int i = 0; i < windowList.Count; i++)
         {
@@ -263,37 +295,5 @@ public class WFEditorWindow :EditorWindow
         }
 
         scriptable.SaveAsset(wdata);
-    }
-
-    BaseWindow FindWindow(int id)
-    {
-        BaseWindow res = windowList.Find((BaseWindow w) =>
-        {
-            return w.Id == id;
-        });
-        return res;
-    }
-
-    T FindWindow<T>(int id)
-        where T : BaseWindow
-    {
-        BaseWindow res = windowList.Find((BaseWindow w) =>
-        {
-            return w.Id == id;
-        });
-
-        if (res == null)
-            return null;
-
-        return res as T;
-    }
-
-    void DrawNodeCurve(Rect start, Rect end, Color color)
-    {
-        Vector3 startPos = new Vector3(start.x + start.width, start.y + start.height / 2, 0);
-        Vector3 endPos = new Vector3(end.x, end.y + end.height / 2, 0);
-        Vector3 startTan = startPos + Vector3.right * 50;
-        Vector3 endTan = endPos + Vector3.left * 50;
-        Handles.DrawBezier(startPos, endPos, startTan, endTan, color, null, 4);
     }
 }

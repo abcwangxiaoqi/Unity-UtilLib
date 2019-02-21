@@ -3,8 +3,34 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
+public enum Mode
+{
+    Editor,
+    Runtime
+}
+
+public enum State
+{
+    Idle,
+    Running
+}
+
 public abstract class BaseWindow
 {
+    protected static GUIStyle BigLabelStyle;
+
+    static BaseWindow()
+    {
+        BigLabelStyle = new GUIStyle(UnityEditor.EditorStyles.boldLabel);
+        BigLabelStyle.fixedHeight = 25;
+        BigLabelStyle.fontSize = 20;
+        BigLabelStyle.alignment = TextAnchor.MiddleCenter;
+        BigLabelStyle.normal.textColor = Color.green;
+    }
+
+    protected Mode mode = Mode.Editor;
+
+    protected State state = State.Idle;
 
     protected GUIStyle textStyle = EditorStyles.textField;
     protected GUIStyle buttonStyle = EditorStyles.miniButton;
@@ -16,7 +42,7 @@ public abstract class BaseWindow
 
     protected Rect windowRect;
 
-    protected WFEditorWindow mainWindow;
+    protected List<BaseWindow> windowList;
     public abstract WindowType windowType { get; }
 
     public int Id { get; private set; }
@@ -37,16 +63,15 @@ public abstract class BaseWindow
         }
     }
 
-    public BaseWindow(Vector2 pos, WFEditorWindow _mainWindow)
+    public BaseWindow(Vector2 pos, List<BaseWindow> _windowList)
     {
         position = pos;
-        mainWindow = _mainWindow;
-
+        windowList = _windowList;
         //设置id 从0开始 没有使用的就用
 
         int td = 0;
 
-        while (mainWindow.windowList.FindIndex((BaseWindow w) =>
+        while (windowList.FindIndex((BaseWindow w) =>
         {
             return w.Id == td;
         }) >= 0)
@@ -57,11 +82,10 @@ public abstract class BaseWindow
         Id = td;
     }
 
-    public BaseWindow(WindowDataBase data, WFEditorWindow _mainWindow)
+    public BaseWindow(WindowDataBase data, List<BaseWindow> _windowList)
     {
         position = data.position;
-        mainWindow = _mainWindow;
-
+        windowList = _windowList;
 
         Id = data.id;
         Name = data.name;
@@ -73,13 +97,21 @@ public abstract class BaseWindow
         windowRect.width = weight;
         windowRect.height = height;
 
+        if (mode == Mode.Runtime && state == State.Running)
+        {
+            Rect rect = new Rect(windowRect.position + new Vector2(0, -30), new Vector2(weight,20));
+            GUI.Label(rect, "Running...", BigLabelStyle);
+        }
+
         //windowRect = GUI.Window(Id, windowRect, gui, windowType.ToString(), NodeCanvas.Editor.CanvasStyles.window);
         windowRect = GUI.Window(Id, windowRect, gui, windowType.ToString());
     }
 
     protected virtual void gui(int id)
-    {        
+    {
+        EditorGUI.BeginDisabledGroup(mode == Mode.Runtime);
         Name = GUILayout.TextField(Name, textStyle);
+        EditorGUI.EndDisabledGroup();
     }
 
     public virtual void rightMouseDraw(Vector2 mouseposition)
@@ -122,5 +154,15 @@ public abstract class BaseWindow
         Vector3 startTan = startPos + Vector3.right * 50;
         Vector3 endTan = endPos + Vector3.left * 50;
         Handles.DrawBezier(startPos, endPos, startTan, endTan, color, null, 4);
+    }
+
+    public void switchMode(Mode _mode)
+    {
+        mode = _mode;
+    }
+
+    public void SetState(State _state)
+    {
+        state = _state;
     }
 }

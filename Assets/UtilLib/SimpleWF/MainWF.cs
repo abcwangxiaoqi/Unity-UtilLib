@@ -8,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[DisallowMultipleComponent]
 public class MainWF : MonoBehaviour
 {
     public event Action<bool> onFinish;
@@ -16,10 +17,7 @@ public class MainWF : MonoBehaviour
     public WindowData data;
 
     public string currentName;
-    public int currentID;
-    
-    [HideInInspector]
-    public string shareData;
+    public int currentID; 
 
     //id 是 key
     Dictionary<int, BaseEntity> entityMap = new Dictionary<int, BaseEntity>();
@@ -28,13 +26,13 @@ public class MainWF : MonoBehaviour
     Dictionary<string, BaseCondition> conditionMap = new Dictionary<string, BaseCondition>();
 
     WindowDataEntity current;
-    SharedData shareDataEntity = null;
+    SharedData shareData = null;
     // Use this for initialization
-    void Start()
+    void Awake()
     {
-        if(!string.IsNullOrEmpty(shareData))
+        if(!string.IsNullOrEmpty(data.shareData))
         {
-            shareDataEntity = Activator.CreateInstance(Type.GetType(shareData)) as SharedData;
+            shareData = Activator.CreateInstance(Type.GetType(data.shareData)) as SharedData;
         }
         current = data.GetEntrance();
         moveNext = true;
@@ -44,8 +42,8 @@ public class MainWF : MonoBehaviour
     BaseEntity currentEntity;
 
     bool moveNext = false;
-    bool finished = false;
-    
+    public bool finished { get; private set; }
+
     WindowDataRouter tempRouter;
     // Update is called once per frame
     void Update()
@@ -76,7 +74,7 @@ public class MainWF : MonoBehaviour
             if(!entityMap.ContainsKey(current.id))
             {
                 type = Type.GetType(current.className);
-                currentEntity = Activator.CreateInstance(type, shareDataEntity) as BaseEntity;
+                currentEntity = Activator.CreateInstance(type, shareData) as BaseEntity;
                 entityMap.Add(current.id, currentEntity);
             }
             currentEntity = entityMap[current.id];
@@ -125,7 +123,7 @@ public class MainWF : MonoBehaviour
                     {
                         type = Type.GetType(item.className);
 
-                        tempCondition = Activator.CreateInstance(type, shareDataEntity) as BaseCondition;
+                        tempCondition = Activator.CreateInstance(type, shareData) as BaseCondition;
 
                         conditionMap.Add(key, tempCondition);
                     }
@@ -175,5 +173,14 @@ public class MainWF : MonoBehaviour
         {
             currentEntity.stop();
         }
+    }
+
+    public T LoadShareData<T>()
+        where T : SharedData,new()
+    {
+        if (null == shareData)
+            return null;
+
+        return shareData as T;
     }
 }

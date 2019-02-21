@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System.Reflection;
+using System;
 
 public class RouterCondition
 {
@@ -12,6 +14,7 @@ public class RouterCondition
 
 public class RouterWindow : BaseWindow
 {
+    static List<string> allConditionClass = new List<string>();
     static GUIStyle linkStyle;
     static RouterWindow()
     {
@@ -21,6 +24,17 @@ public class RouterWindow : BaseWindow
         linkStyle.alignment = TextAnchor.MiddleCenter;
         linkStyle.normal.textColor = Color.green;
         linkStyle.fixedWidth = 10;
+
+        Assembly _assembly = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp.dll");
+        Type[] tys = _assembly.GetTypes();
+
+        foreach (var item in tys)
+        {
+            if (item.IsSubclassOf(typeof(BaseCondition)) && !item.IsInterface && !item.IsAbstract)
+            {
+                allConditionClass.Add(item.FullName);
+            }
+        }
     }
 
     List<RouterCondition> conditions = new List<RouterCondition>();
@@ -36,8 +50,8 @@ public class RouterWindow : BaseWindow
     EntityWindow defaultEntity = null;
     Vector2 defaultPos;
 
-    public RouterWindow(Vector2 pos, WFEditorWindow _mainWindow)
-        :base(pos, _mainWindow)
+    public RouterWindow(Vector2 pos, List<BaseWindow> _windowList)
+        :base(pos, _windowList)
     {
         Name = "Router";
         
@@ -45,16 +59,15 @@ public class RouterWindow : BaseWindow
         
     }
 
-    public RouterWindow(WindowDataRouter itemData, WFEditorWindow _mainWindow)
-        : base(itemData, _mainWindow)
+    public RouterWindow(WindowDataRouter itemData, List<BaseWindow> _windowList)
+        : base(itemData, _windowList)
     {
         addHeight = buttonStyle.lineHeight + 8;        
     }
 
-    public void SetDefault(EntityWindow defEntity,Vector2 defPos)
+    public void SetDefault(EntityWindow defEntity)
     {
         defaultEntity = defEntity;
-        defaultPos = defPos;
     }
 
     public void SetConditions(List<RouterCondition> conditionEntities)
@@ -106,13 +119,16 @@ public class RouterWindow : BaseWindow
             if (item.entity == null)
                 continue;
 
-            if (!mainWindow.windowList.Contains(item.entity))
+            if (!windowList.Contains(item.entity))
             {
                 item.entity = null;
                 continue;
             }
 
-            DrawArrow(item.drawPos + position, item.entity.In, Color.green);
+            if (item.drawPos == Vector2.zero)
+                continue;
+
+            DrawArrow(item.drawPos + position, item.entity.In, Color.white);
         }
         #endregion
 
@@ -120,13 +136,14 @@ public class RouterWindow : BaseWindow
         if (defaultEntity == null)
             return;
 
-        if (!mainWindow.windowList.Contains(defaultEntity))
+        if (!windowList.Contains(defaultEntity))
         {
             defaultEntity = null;
             return;
         }
-
-        DrawArrow(defaultPos + position, defaultEntity.In, Color.green);
+        if (defaultPos == Vector2.zero)
+            return;
+        DrawArrow(defaultPos + position, defaultEntity.In, Color.white);
         #endregion
     }    
 
@@ -136,6 +153,8 @@ public class RouterWindow : BaseWindow
     protected override void gui(int id)
     {
         base.gui(id);
+
+        EditorGUI.BeginDisabledGroup(mode == Mode.Runtime);
 
         GUI.color = Color.green;
         if (GUILayout.Button("Add", buttonStyle))
@@ -154,6 +173,8 @@ public class RouterWindow : BaseWindow
 
         drawDefualt();
 
+        EditorGUI.EndDisabledGroup();
+
         GUI.DragWindow();
     }
 
@@ -165,11 +186,11 @@ public class RouterWindow : BaseWindow
             GUILayout.BeginHorizontal();
 
             string c = rc.className;
-            int selectindex = mainWindow.allConditionClass.IndexOf(c);
-            selectindex = EditorGUILayout.Popup(selectindex, mainWindow.allConditionClass.ToArray(), popupStyle);
+            int selectindex = allConditionClass.IndexOf(c);
+            selectindex = EditorGUILayout.Popup(selectindex, allConditionClass.ToArray(), popupStyle);
             if (selectindex >= 0)
             {
-                conditions[i].className = mainWindow.allConditionClass[selectindex];
+                conditions[i].className = allConditionClass[selectindex];
             }
 
             //删除
@@ -190,13 +211,13 @@ public class RouterWindow : BaseWindow
 
                 menu.AddItem(new GUIContent("New Entity"), false, () =>
                 {
-                    var tempWindow = new EntityWindow(new Vector2(50, 50)+position, mainWindow);
-                    mainWindow.windowList.Add(tempWindow);
+                    var tempWindow = new EntityWindow(new Vector2(50, 50)+position, windowList);
+                    windowList.Add(tempWindow);
                     rc.entity = tempWindow;
                 });
 
                 List<EntityWindow> selectionList = new List<EntityWindow>();
-                foreach (var item in mainWindow.windowList)
+                foreach (var item in windowList)
                 {
                     if (item.windowType == WindowType.Entity)
                     {
@@ -262,13 +283,13 @@ public class RouterWindow : BaseWindow
 
             menu.AddItem(new GUIContent("New Entity"), false, () =>
             {
-                var tempWindow = new EntityWindow(new Vector2(50, 50)+position, mainWindow);
-                mainWindow.windowList.Add(tempWindow);
+                var tempWindow = new EntityWindow(new Vector2(50, 50)+position, windowList);
+                windowList.Add(tempWindow);
                 defaultEntity = tempWindow;
             });
 
             List<BaseWindow> selectionList = new List<BaseWindow>();
-            foreach (var item in mainWindow.windowList)
+            foreach (var item in windowList)
             {
                 if (item is EntityWindow)
                 {
@@ -324,7 +345,7 @@ public class RouterWindow : BaseWindow
 
         menu.AddItem(new GUIContent("Delte"), false, () =>
         {
-            mainWindow.windowList.Remove(this);
+            windowList.Remove(this);
         });
 
         menu.ShowAsContext();
