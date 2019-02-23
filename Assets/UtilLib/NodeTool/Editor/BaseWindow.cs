@@ -15,6 +15,7 @@ namespace NodeTool
     public abstract class BaseWindow
     {
         protected static GUIStyle BigLabelStyle;
+        protected static GUIStyle NameTextStyle;
 
         static BaseWindow()
         {
@@ -23,6 +24,14 @@ namespace NodeTool
             BigLabelStyle.fontSize = 20;
             BigLabelStyle.alignment = TextAnchor.MiddleCenter;
             BigLabelStyle.normal.textColor = Color.green;
+
+            NameTextStyle = new GUIStyle(UnityEditor.EditorStyles.textField);
+            NameTextStyle.fixedHeight = 15;
+            NameTextStyle.fontSize = 12;
+            NameTextStyle.fontStyle = FontStyle.Bold;
+            NameTextStyle.alignment = TextAnchor.MiddleCenter;
+            NameTextStyle.normal.textColor = Color.white;
+            NameTextStyle.focused.textColor = Color.white;
         }
 
         //主要用作 记录路径信息
@@ -35,8 +44,7 @@ namespace NodeTool
         protected GUIStyle popupStyle = EditorStyles.popup;
 
         public Vector2 position { get; protected set; }
-        protected float height = 100;
-        protected float weight = 150;
+        protected abstract Vector2 size { get; }
 
         protected Rect windowRect;
 
@@ -50,14 +58,14 @@ namespace NodeTool
         {
             get
             {
-                return position + new Vector2(0, height / 2);
+                return position + new Vector2(0, size.y / 2);
             }
         }
         public Vector2 Out
         {
             get
             {
-                return position + new Vector2(weight, height / 2);
+                return position + new Vector2(size.x, size.y / 2);
             }
         }
 
@@ -92,33 +100,32 @@ namespace NodeTool
         public virtual void draw()
         {
             windowRect.position = position;
-            windowRect.width = weight;
-            windowRect.height = height;
+            windowRect.size = size;
 
             if (Application.isPlaying)
             {
                 if (state == State.Running)
                 {
                     BigLabelStyle.normal.textColor = Color.green;
-                    Rect rect = new Rect(windowRect.position + new Vector2(0, -30), new Vector2(weight, 20));
+                    Rect rect = new Rect(windowRect.position + new Vector2(0, -30), new Vector2(size.x, 20));
                     GUI.Label(rect, "Running...", BigLabelStyle);
                 }
                 else if (state == State.Error)
                 {
                     BigLabelStyle.normal.textColor = Color.red;
-                    Rect rect = new Rect(windowRect.position + new Vector2(0, -30), new Vector2(weight, 20));
+                    Rect rect = new Rect(windowRect.position + new Vector2(0, -30), new Vector2(size.x, 20));
                     GUI.Label(rect, "Error", BigLabelStyle);
                 }
             }
 
             //windowRect = GUI.Window(Id, windowRect, gui, windowType.ToString(), NodeCanvas.Editor.CanvasStyles.window);
-            windowRect = GUI.Window(Id, windowRect, gui, windowType.ToString());
+            windowRect = GUI.Window(Id, windowRect, gui, string.Format("[{0}] {1}",Id,windowType));
         }
 
         protected virtual void gui(int id)
         {
             EditorGUI.BeginDisabledGroup(Application.isPlaying);
-            Name = GUILayout.TextField(Name, textStyle);
+            Name = GUILayout.TextField(Name, NameTextStyle);
             EditorGUI.EndDisabledGroup();
         }
 

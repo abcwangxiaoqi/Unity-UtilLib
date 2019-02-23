@@ -13,6 +13,11 @@ namespace NodeTool
             if (obj == null)
                 return;
 
+            if (window != null)
+                window.Close();
+
+            window = null;
+
             target = obj;
             window = GetWindow<RuntimeNodeCanvas>(string.Format("{0}({1})", obj.name, obj.data.name));
         }

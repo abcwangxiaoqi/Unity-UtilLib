@@ -32,6 +32,16 @@ namespace NodeTool
         //下一节点
         public BaseWindow next { get; protected set; }
 
+        Vector2 _size = new Vector2(150,100);
+        protected override Vector2 size
+        {
+            get
+            {
+                return _size;
+            }
+        }
+
+
         public override NodeType windowType
         {
             get
@@ -130,14 +140,14 @@ namespace NodeTool
         {
             GenericMenu menu = new GenericMenu();
 
-            menu.AddItem(new GUIContent("Next/New Entity"), false, () =>
+            menu.AddItem(new GUIContent("Next/New Node"), false, () =>
             {
                 var tempWindow = new NodeWindow(mouseposition, windowList);
                 windowList.Add(tempWindow);
                 next = tempWindow;
             });
 
-            menu.AddItem(new GUIContent("Next/New Condition"), false, () =>
+            menu.AddItem(new GUIContent("Next/New Router"), false, () =>
             {
                 var tempWindow = new RouterWindow(mouseposition, windowList);
                 windowList.Add(tempWindow);
@@ -149,7 +159,7 @@ namespace NodeTool
 
             foreach (var item in windowList)
             {
-                if (item == this)
+                if (item.Id == Id)
                     continue;
                 selectionList.Add(item);
             }
@@ -157,7 +167,8 @@ namespace NodeTool
             foreach (var item in selectionList)
             {
                 bool select = (next != null) && next.Id == item.Id;
-                menu.AddItem(new GUIContent("Next/" + item.Id + " " + item.Name), select, () =>
+
+                menu.AddItem(new GUIContent(string.Format("Next/[{0}][{1}] {2}", item.Id, item.windowType, item.Name)), select, () =>
                 {
                     if (select)
                     {

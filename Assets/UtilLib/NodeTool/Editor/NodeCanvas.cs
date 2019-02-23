@@ -12,9 +12,10 @@ namespace NodeTool
     {
         protected static EditorWindow window;
         //全部
-        protected List<BaseWindow> windowList = new List<BaseWindow>();
+        protected List<BaseWindow> windowList = null;
 
         protected FixedWindow fixedWindow;
+
 
         protected virtual void Awake()
         {

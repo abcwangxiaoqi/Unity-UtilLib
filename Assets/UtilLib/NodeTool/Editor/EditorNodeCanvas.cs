@@ -19,6 +19,11 @@ namespace NodeTool
         [MenuItem("Assets/Node Canvas/Edit", false, priority = 49)]
         static void Edit()
         {
+            if (window != null)
+                window.Close();
+
+            window = null;
+            
             Object asset = Selection.activeObject;
             scriptable = new ScriptableItem(AssetDatabase.GetAssetPath(asset));
             window = GetWindow<EditorNodeCanvas>(asset.name);
@@ -42,6 +47,11 @@ namespace NodeTool
 
         public static void Open(Object obj)
         {
+            if (window != null)
+                window.Close();
+
+            window = null;
+
             scriptable = new ScriptableItem(AssetDatabase.GetAssetPath(obj));
             window = GetWindow<EditorNodeCanvas>(obj.name);
         }
@@ -149,6 +159,13 @@ namespace NodeTool
             save(false);
         }
 
+        protected override void OnDisable()
+        {
+            base.OnDisable();
+
+            save(true);
+        }
+
         protected override void OnDestroy()
         {
             base.OnDestroy();
@@ -196,10 +213,7 @@ namespace NodeTool
             wdata.routerlist.Clear();
 
 
-            if(fixedWindow!=null)
-            {
-                wdata.shareData = fixedWindow.shareData;
-            }
+            wdata.shareData = fixedWindow.shareData;
 
 
             for (int i = 0; i < windowList.Count; i++)

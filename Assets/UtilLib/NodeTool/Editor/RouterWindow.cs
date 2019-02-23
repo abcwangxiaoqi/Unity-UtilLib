@@ -49,6 +49,15 @@ namespace NodeTool
             }
         }
 
+        Vector2 _size = new Vector2(150, 100);
+        protected override Vector2 size
+        {
+            get
+            {
+                return _size;
+            }
+        }
+
         //runtime 模式下 条件通过的index
         int runtimePassedConditionIndex = -1;
 
@@ -78,7 +87,7 @@ namespace NodeTool
         public void SetConditions(List<RouterCondition> conditionEntities)
         {
             conditions = conditionEntities;
-            height += addHeight * conditionEntities.Count;
+            _size.y += addHeight * conditionEntities.Count;
         }
 
         public override DataBase GetData()
@@ -183,7 +192,7 @@ namespace NodeTool
             {
                 conditions.Add(new RouterCondition());
 
-                height += addHeight;
+                _size.y += addHeight;
             }
             GUI.color = Color.white;
 
@@ -221,7 +230,7 @@ namespace NodeTool
                 {
                     conditions.RemoveAt(i);
                     i--;
-                    height -= addHeight;
+                    _size.y -= addHeight;
                 }
                 GUI.color = Color.white;
 
@@ -231,7 +240,7 @@ namespace NodeTool
                 {
                     GenericMenu menu = new GenericMenu();
 
-                    menu.AddItem(new GUIContent("New Entity"), false, () =>
+                    menu.AddItem(new GUIContent("New Node"), false, () =>
                     {
                         var tempWindow = new NodeWindow(new Vector2(50, 50) + position, windowList);
                         windowList.Add(tempWindow);
@@ -250,7 +259,7 @@ namespace NodeTool
                     foreach (var item in selectionList)
                     {
                         bool select = (rc.entity != null) && rc.entity.Id == item.Id;
-                        menu.AddItem(new GUIContent(item.Id + " " + item.Name), select, () =>
+                        menu.AddItem(new GUIContent(string.Format("Next/[{0}][{1}] {2}", item.Id, item.windowType, item.Name)), select, () =>
                         {
                             if (select)
                             {
