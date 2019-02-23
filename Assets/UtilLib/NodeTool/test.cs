@@ -45,11 +45,29 @@ public class testShareData2: SharedData
     public int state = 0;
 }
 
+public class testShareData6 : SharedData
+{
+    public int state = 0;
+}
+
 //=========================================
 //[Name("实体1")]
 public class Enity1 : BaseNode
 {
     public Enity1(SharedData data) : base(data) { }
+
+    protected override void execute()
+    {
+        Debug.Log("Enity1");
+
+        (shareData as testShareData).state = 3;
+        finish();
+    }
+}
+
+public class Enity6 : BaseNode
+{
+    public Enity6(SharedData data) : base(data) { }
 
     protected override void execute()
     {

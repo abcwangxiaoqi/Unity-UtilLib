@@ -37,7 +37,6 @@ namespace NodeTool
 
         public event Action<bool> onFinish;
 
-        //editor 脚本保证其不能修改 动态绑定
         public NodeCanvasData data;
 
         public string currentName;

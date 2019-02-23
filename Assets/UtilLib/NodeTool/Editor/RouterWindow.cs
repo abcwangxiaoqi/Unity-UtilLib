@@ -241,7 +241,7 @@ namespace NodeTool
                     List<NodeWindow> selectionList = new List<NodeWindow>();
                     foreach (var item in windowList)
                     {
-                        if (item.windowType == NodeType.Entity)
+                        if (item.windowType == NodeType.Node)
                         {
                             selectionList.Add(item as NodeWindow);
                         }

@@ -36,14 +36,14 @@ namespace NodeTool
         {
             get
             {
-                return NodeType.Entity;
+                return NodeType.Node;
             }
         }
 
         public NodeWindow(Vector2 pos, List<BaseWindow> _windowList)
             : base(pos, _windowList)
         {
-            Name = "Entity";
+            Name = "Node";
         }
 
         public NodeWindow(NodeData itemData, List<BaseWindow> _windowList)

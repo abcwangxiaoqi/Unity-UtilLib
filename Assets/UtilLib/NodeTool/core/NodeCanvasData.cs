@@ -9,12 +9,12 @@ namespace NodeTool
     {
         public string shareData;
 
-        public List<NodeData> entitylist = new List<NodeData>();
+        public List<NodeData> nodelist = new List<NodeData>();
         public List<RouterData> routerlist = new List<RouterData>();
 
         public DataBase Get(int id)
         {
-            DataBase result = entitylist.Find((NodeData e) =>
+            DataBase result = nodelist.Find((NodeData e) =>
             {
                 return e.id == id;
             });
@@ -32,7 +32,7 @@ namespace NodeTool
 
         public NodeData GetEntrance()
         {
-            return entitylist.Find((NodeData e) =>
+            return nodelist.Find((NodeData e) =>
             {
                 return e.isEntrance == true;
             });
@@ -41,7 +41,7 @@ namespace NodeTool
 
     public enum NodeType
     {
-        Entity,
+        Node,
         Router
     }
 
@@ -55,7 +55,7 @@ namespace NodeTool
         {
             get
             {
-                return NodeType.Entity;
+                return NodeType.Node;
             }
         }
 
@@ -70,7 +70,7 @@ namespace NodeTool
         //只存id 存实例会出现 死循环的情况
         public int next = -1;
 
-        public override NodeType type => NodeType.Entity;
+        public override NodeType type => NodeType.Node;
     }
 
     [Serializable]
