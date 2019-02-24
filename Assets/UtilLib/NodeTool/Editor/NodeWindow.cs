@@ -10,6 +10,11 @@ namespace NodeTool
     {
         static List<string> allEntityClass = new List<string>();
 
+        static GUIContent nextNewNodeContent = new GUIContent("Next/New Node");
+        static GUIContent nextNewRouterContent = new GUIContent("Next/New Router");
+        static GUIContent deleteContent = new GUIContent("Delte");
+        static GUIContent entranceContent = new GUIContent("Set Entrance");
+
         static NodeWindow()
         {
             Assembly _assembly = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp.dll");
@@ -61,6 +66,8 @@ namespace NodeTool
         {
             ClassName = itemData.className;
             isEntrance = itemData.isEntrance;
+
+            classIndex = allEntityClass.IndexOf(ClassName);
         }
 
         public void SetNext(BaseWindow entity)
@@ -111,12 +118,11 @@ namespace NodeTool
             }
         }
 
+        int classIndex = -1;
+
         protected override void gui(int id)
         {
             base.gui(id);
-
-            int classIndex = -1;
-            classIndex = allEntityClass.IndexOf(ClassName);
 
             EditorGUI.BeginDisabledGroup(Application.isPlaying);
             classIndex = EditorGUILayout.Popup(classIndex, allEntityClass.ToArray(), popupStyle);
@@ -136,76 +142,80 @@ namespace NodeTool
             GUI.DragWindow();
         }
 
+        GenericMenu menu;
+
         public override void rightMouseDraw(Vector2 mouseposition)
         {
             GenericMenu menu = new GenericMenu();
 
-            menu.AddItem(new GUIContent("Next/New Node"), false, () =>
-            {
-                var tempWindow = new NodeWindow(mouseposition, windowList);
-                windowList.Add(tempWindow);
-                next = tempWindow;
-            });
 
-            menu.AddItem(new GUIContent("Next/New Router"), false, () =>
-            {
-                var tempWindow = new RouterWindow(mouseposition, windowList);
-                windowList.Add(tempWindow);
-                next = tempWindow;
-            });
-
-            #region 选择下一个
-            List<BaseWindow> selectionList = new List<BaseWindow>();
-
-            foreach (var item in windowList)
-            {
-                if (item.Id == Id)
-                    continue;
-                selectionList.Add(item);
-            }
-
-            foreach (var item in selectionList)
-            {
-                bool select = (next != null) && next.Id == item.Id;
-
-                menu.AddItem(new GUIContent(string.Format("Next/[{0}][{1}] {2}", item.Id, item.windowType, item.Name)), select, () =>
+                menu.AddItem(nextNewNodeContent, false, () =>
                 {
-                    if (select)
-                    {
-                        next = null;
-                    }
-                    else
-                    {
-                        next = item;
-                    }
+                    var tempWindow = new NodeWindow(mouseposition, windowList);
+                    windowList.Add(tempWindow);
+                    next = tempWindow;
                 });
-            }
-            #endregion
 
-            if (isEntrance)
-            {//入口函数不能删除
-                menu.AddDisabledItem(new GUIContent("Delte"));
-            }
-            else
-            {
-                menu.AddItem(new GUIContent("Delte"), false, () =>
+                menu.AddItem(nextNewRouterContent, false, () =>
                 {
-                    windowList.Remove(this);
+                    var tempWindow = new RouterWindow(mouseposition, windowList);
+                    windowList.Add(tempWindow);
+                    next = tempWindow;
                 });
-            }
 
-            menu.AddItem(new GUIContent("Set Entrance"), isEntrance, () =>
-            {
+                #region 选择下一个
+                List<BaseWindow> selectionList = new List<BaseWindow>();
+
                 foreach (var item in windowList)
                 {
-                    if (item is NodeWindow)
-                    {
-                        (item as NodeWindow).isEntrance = false;
-                    }
+                    if (item.Id == Id)
+                        continue;
+                    selectionList.Add(item);
                 }
 
-                isEntrance = true;
-            });
+                foreach (var item in selectionList)
+                {
+                    bool select = (next != null) && next.Id == item.Id;
+
+                    menu.AddItem(new GUIContent(string.Format("Next/[{0}][{1}] {2}", item.Id, item.windowType, item.Name))
+                                 , select, () =>
+                                 {
+                                     if (select)
+                                     {
+                                         next = null;
+                                     }
+                                     else
+                                     {
+                                         next = item;
+                                     }
+                                 });
+                }
+                #endregion
+
+                if (isEntrance)
+                {//入口函数不能删除
+                    menu.AddDisabledItem(deleteContent);
+                }
+                else
+                {
+                    menu.AddItem(deleteContent, false, () =>
+                    {
+                        windowList.Remove(this);
+                    });
+                }
+
+                menu.AddItem(entranceContent, isEntrance, () =>
+                {
+                    foreach (var item in windowList)
+                    {
+                        if (item is NodeWindow)
+                        {
+                            (item as NodeWindow).isEntrance = false;
+                        }
+                    }
+
+                    isEntrance = true;
+                });
 
             menu.ShowAsContext();
         }

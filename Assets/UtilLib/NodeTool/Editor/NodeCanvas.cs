@@ -24,9 +24,6 @@ namespace NodeTool
 
         protected virtual void OnGUI()
         {
-            if (windowList == null)
-                return;
-
             // 注意：必须在  BeginWindows(); 和 EndWindows(); 之间 调用 GUI.Window 才能显示
             BeginWindows();
 

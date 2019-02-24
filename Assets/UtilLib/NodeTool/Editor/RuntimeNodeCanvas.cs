@@ -26,6 +26,7 @@ namespace NodeTool
         {
             base.Awake();
 
+            EditorApplication.playModeStateChanged -= playModeStateChanged;
             EditorApplication.playModeStateChanged += playModeStateChanged;
 
             generateWindowData(target.data);
@@ -42,6 +43,9 @@ namespace NodeTool
 
         protected override void OnGUI()
         {
+            if (windowList == null)
+                return;
+            
             foreach (var item in windowList)
             {
                 if (target.finished)
@@ -91,8 +95,6 @@ namespace NodeTool
         protected override void OnDestroy()
         {
             base.OnDestroy();
-
-            EditorApplication.playModeStateChanged -= playModeStateChanged;
         }
     }
 

@@ -23,7 +23,8 @@ namespace NodeTool
                 window.Close();
 
             window = null;
-            
+
+
             Object asset = Selection.activeObject;
             scriptable = new ScriptableItem(AssetDatabase.GetAssetPath(asset));
             window = GetWindow<EditorNodeCanvas>(asset.name);
@@ -57,6 +58,10 @@ namespace NodeTool
         }
 
         static ScriptableItem scriptable;
+
+        static GUIContent addNode = new GUIContent("Add Node");
+        static GUIContent addRouter = new GUIContent("Add Router");
+        static GUIContent comiling = new GUIContent("...Comiling...");
 
         NodeCanvasData wdata;
 
@@ -93,10 +98,12 @@ namespace NodeTool
 
         protected override void OnGUI()
         {
+            if (windowList == null)
+                return;
             
             if (EditorApplication.isCompiling)
             {
-                ShowNotification(new GUIContent("...comiling..."));
+                ShowNotification(comiling);
 
                 if(!EditorPrefs.HasKey(prefKey))
                 {
@@ -149,6 +156,16 @@ namespace NodeTool
                 {
                     curSelect.leftMouseDraw(curEvent);
                 }
+                else
+                {
+                    if(this.position.Contains(curEvent.mousePosition))
+                    {
+                        foreach (var item in windowList)
+                        {
+                            item.leftMouseDraw(curEvent);
+                        }
+                    }
+                }
             }
 
             base.OnGUI();
@@ -190,12 +207,12 @@ namespace NodeTool
                 else
                 {
                     GenericMenu menu = new GenericMenu();
-                    menu.AddItem(new GUIContent("Add Node"), false, () =>
+                    menu.AddItem(addNode, false, () =>
                     {
                         windowList.Add(new NodeWindow(mousePosition, windowList));
                     });
 
-                    menu.AddItem(new GUIContent("Add Rounter"), false, () =>
+                    menu.AddItem(addRouter, false, () =>
                     {
                         windowList.Add(new RouterWindow(mousePosition, windowList));
                     });
@@ -232,8 +249,6 @@ namespace NodeTool
             {
                 scriptable.SaveAsset(wdata);
             }
-
-
         }
     }   
 }

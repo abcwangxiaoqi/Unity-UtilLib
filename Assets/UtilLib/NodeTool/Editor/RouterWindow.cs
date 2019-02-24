@@ -18,6 +18,10 @@ namespace NodeTool
     {
         static List<string> allConditionClass = new List<string>();
         static GUIStyle linkStyle;
+
+        static GUIContent newNode = new GUIContent("New Node");
+        static GUIContent deleteNode = new GUIContent("Delte");
+
         static RouterWindow()
         {
             linkStyle = new GUIStyle(UnityEditor.EditorStyles.boldLabel);
@@ -240,7 +244,7 @@ namespace NodeTool
                 {
                     GenericMenu menu = new GenericMenu();
 
-                    menu.AddItem(new GUIContent("New Node"), false, () =>
+                    menu.AddItem(newNode, false, () =>
                     {
                         var tempWindow = new NodeWindow(new Vector2(50, 50) + position, windowList);
                         windowList.Add(tempWindow);
@@ -312,7 +316,7 @@ namespace NodeTool
             {
                 GenericMenu menu = new GenericMenu();
 
-                menu.AddItem(new GUIContent("New Entity"), false, () =>
+                menu.AddItem(newNode, false, () =>
                 {
                     var tempWindow = new NodeWindow(new Vector2(50, 50) + position, windowList);
                     windowList.Add(tempWindow);
@@ -374,7 +378,7 @@ namespace NodeTool
         {
             GenericMenu menu = new GenericMenu();
 
-            menu.AddItem(new GUIContent("Delte"), false, () =>
+            menu.AddItem(deleteNode, false, () =>
             {
                 windowList.Remove(this);
             });
