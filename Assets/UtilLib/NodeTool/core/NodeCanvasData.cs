@@ -70,7 +70,13 @@ namespace NodeTool
         //只存id 存实例会出现 死循环的情况
         public int next = -1;
 
-        public override NodeType type => NodeType.Node;
+        public override NodeType type
+        {
+            get
+            {
+                return NodeType.Node;
+            }
+        }
     }
 
     [Serializable]
@@ -79,7 +85,13 @@ namespace NodeTool
         public List<RouterConditionData> conditions = new List<RouterConditionData>();
         public int defaultEntity = -1;
 
-        public override NodeType type => NodeType.Router;
+        public override NodeType type
+        {
+            get
+            {
+                return NodeType.Router;
+            }
+        }
     }
 
     [Serializable]

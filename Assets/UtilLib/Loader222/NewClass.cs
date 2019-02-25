@@ -2,7 +2,6 @@
 using System;
 using UnityEngine;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Net;
 using System.IO;
@@ -30,10 +29,8 @@ public class ResponseData
 public class LoaderTask
 {
     bool state = true;
-    Task task = null;
     public LoaderTask()
     {
-        task = Task.Factory.StartNew(Loop);
     }
 
     void Loop()
@@ -156,17 +153,17 @@ public class LoaderTask
 
     public void Start()
     {
-        if (null == task)
-            return;
+        //if (null == task)
+        //    return;
 
-        task.Start();
+        //task.Start();
     }
 
     public void Stop()
     {
-        if (null == task)
-            return;
+        //if (null == task)
+        //    return;
 
-        task.Dispose();
+        //task.Dispose();
     }
 }

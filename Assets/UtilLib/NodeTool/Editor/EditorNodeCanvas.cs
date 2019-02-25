@@ -156,16 +156,16 @@ namespace NodeTool
                 {
                     curSelect.leftMouseDraw(curEvent);
                 }
-                else
-                {
-                    if(this.position.Contains(curEvent.mousePosition))
-                    {
-                        foreach (var item in windowList)
-                        {
-                            item.leftMouseDraw(curEvent);
-                        }
-                    }
-                }
+                //else
+                //{
+                //    if(this.position.Contains(curEvent.mousePosition))
+                //    {
+                //        foreach (var item in windowList)
+                //        {
+                //            item.leftMouseDraw(curEvent);
+                //        }
+                //    }
+                //}
             }
 
             base.OnGUI();

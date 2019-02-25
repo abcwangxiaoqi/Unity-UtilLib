@@ -95,8 +95,13 @@ namespace NodeTool
             if (current == null)
             {
                 //当前实例为空 则流程结束
-                onFinish?.Invoke(true);
                 finished = true;
+
+                if(onFinish!=null)
+                {
+                    onFinish.Invoke(true);
+                }                
+                
                 return;
             }
 
@@ -119,7 +124,10 @@ namespace NodeTool
             catch (Exception e)
             {
                 finished = true;
-                onFinish?.Invoke(false);
+                if (onFinish != null)
+                {
+                    onFinish.Invoke(false);
+                }
                 error = e.Message;
                 throw;
             }
@@ -220,8 +228,11 @@ namespace NodeTool
                     catch (Exception e)
                     {
                         error = e.Message;
-                        onFinish?.Invoke(false);
                         finished = true;
+                        if (onFinish != null)
+                        {
+                            onFinish.Invoke(false);
+                        }                        
                         throw;
                     }
                 }
