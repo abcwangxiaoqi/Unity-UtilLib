@@ -43,9 +43,14 @@ namespace NodeTool
 
         protected override void OnGUI()
         {
+            if (EditorApplication.isCompiling)
+            {
+                Close();
+            }
+
             if (windowList == null)
                 return;
-            
+
             foreach (var item in windowList)
             {
                 if (target.finished)

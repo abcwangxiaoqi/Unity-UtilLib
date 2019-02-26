@@ -65,14 +65,12 @@ namespace NodeTool
 
         NodeCanvasData wdata;
 
-
+        
         protected override void Awake()
         {
             EditorApplication.playModeStateChanged -= playModeStateChanged;
             EditorApplication.playModeStateChanged += playModeStateChanged;
-
-            windowList = new List<BaseWindow>();
-
+           
             wdata = scriptable.Load<NodeCanvasData>();
 
             generateWindowData(wdata);
@@ -90,6 +88,7 @@ namespace NodeTool
         BaseWindow curSelect = null;
         Event curEvent;
         Vector2 mousePosition;
+             
 
         //当窗口打开 修改了代码 编译前保存资源的url
         //编译完成后 再次加载资源
@@ -97,10 +96,7 @@ namespace NodeTool
         string prefKey = "prefKey";
 
         protected override void OnGUI()
-        {
-            if (windowList == null)
-                return;
-            
+        {           
             if (EditorApplication.isCompiling)
             {
                 ShowNotification(comiling);
@@ -112,7 +108,6 @@ namespace NodeTool
 
                 return;
             }
-
 
             if(EditorPrefs.HasKey(prefKey))
             {
@@ -126,6 +121,9 @@ namespace NodeTool
 
                 Repaint();
             }
+
+            if (windowList == null)
+                return;
 
             curEvent = Event.current;
             mousePosition = curEvent.mousePosition;
@@ -158,8 +156,9 @@ namespace NodeTool
                 }
                 //else
                 //{
-                //    if(this.position.Contains(curEvent.mousePosition))
+                //    if (this.position.Contains(curEvent.mousePosition))
                 //    {
+                //        //窗体移动位置
                 //        foreach (var item in windowList)
                 //        {
                 //            item.leftMouseDraw(curEvent);

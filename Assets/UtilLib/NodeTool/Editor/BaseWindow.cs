@@ -117,8 +117,7 @@ namespace NodeTool
                     GUI.Label(rect, "Error", BigLabelStyle);
                 }
             }
-
-            //windowRect = GUI.Window(Id, windowRect, gui, windowType.ToString(), NodeCanvas.Editor.CanvasStyles.window);
+            
             windowRect = GUI.Window(Id, windowRect, gui, string.Format("[{0}] {1}",Id,windowType));
         }
 

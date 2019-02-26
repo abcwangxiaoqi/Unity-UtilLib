@@ -19,7 +19,7 @@ namespace NodeTool
 
         public FixedWindow(string shareDataName)
         {
-            windowRect = new Rect(20, 20, 250, 100);
+            windowRect = new Rect(20, 50, 250, 100);
 
             Assembly _assembly = Assembly.LoadFile("Library/ScriptAssemblies/Assembly-CSharp.dll");
             Type[] tys = _assembly.GetTypes();

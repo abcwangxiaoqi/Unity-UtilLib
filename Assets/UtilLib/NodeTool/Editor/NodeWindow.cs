@@ -14,6 +14,7 @@ namespace NodeTool
         static GUIContent nextNewRouterContent = new GUIContent("Next/New Router");
         static GUIContent deleteContent = new GUIContent("Delte");
         static GUIContent entranceContent = new GUIContent("Set Entrance");
+        static string separator = "Next/";
 
         static NodeWindow()
         {
@@ -162,9 +163,11 @@ namespace NodeTool
                     windowList.Add(tempWindow);
                     next = tempWindow;
                 });
+            
+            menu.AddSeparator(separator);
 
                 #region 选择下一个
-                List<BaseWindow> selectionList = new List<BaseWindow>();
+            List<BaseWindow> selectionList = new List<BaseWindow>();
 
                 foreach (var item in windowList)
                 {

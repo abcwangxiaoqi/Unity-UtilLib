@@ -22,6 +22,9 @@ namespace NodeTool
 
         }
 
+        protected virtual void Update()
+        { }
+
         protected virtual void OnGUI()
         {
             // 注意：必须在  BeginWindows(); 和 EndWindows(); 之间 调用 GUI.Window 才能显示
@@ -93,6 +96,7 @@ namespace NodeTool
 
         protected void generateWindowData(NodeCanvasData windowData)
         {
+            windowList = new List<BaseWindow>();
             fixedWindow = new FixedWindow(windowData.shareData);
 
             foreach (var item in windowData.nodelist)

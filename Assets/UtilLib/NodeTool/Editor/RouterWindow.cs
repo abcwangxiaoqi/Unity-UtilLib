@@ -251,6 +251,8 @@ namespace NodeTool
                         rc.entity = tempWindow;
                     });
 
+                    menu.AddSeparator("");
+
                     List<NodeWindow> selectionList = new List<NodeWindow>();
                     foreach (var item in windowList)
                     {
@@ -263,7 +265,7 @@ namespace NodeTool
                     foreach (var item in selectionList)
                     {
                         bool select = (rc.entity != null) && rc.entity.Id == item.Id;
-                        menu.AddItem(new GUIContent(string.Format("Next/[{0}][{1}] {2}", item.Id, item.windowType, item.Name)), select, () =>
+                        menu.AddItem(new GUIContent(string.Format("[{0}][{1}] {2}", item.Id, item.windowType, item.Name)), select, () =>
                         {
                             if (select)
                             {
@@ -418,6 +420,18 @@ public static class MyEditorLayout
         GUIContent content = new GUIContent(txt);
         rect = GUILayoutUtility.GetRect(content, style);
         return GUI.Button(rect, content, style);
+    }
+
+    public static bool Button(Texture image, out Rect rect)
+    {
+        rect = GUILayoutUtility.GetRect(image.width, image.height);
+        GUIStyle style = new GUIStyle(EditorStyles.miniButton);
+        style.fixedHeight =50;
+        style.fixedWidth = 50;
+        style.alignment = TextAnchor.MiddleCenter;
+        style.normal.background = null;
+
+        return GUI.Button(rect, image, style);
     }
 
     public static bool Button(string txt, out Rect rect)
