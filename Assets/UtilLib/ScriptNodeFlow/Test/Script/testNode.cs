@@ -15,7 +15,7 @@ public class Enity1 : Node
         //get share data and you can modify it
         (shareData as testShareData).state = 3;
 
-        //call finish method when you're sure finished completely
+        //call finish method when you're sure finished completely        
         finish();
     }
 }
@@ -65,6 +65,14 @@ public class Enity4 : Node
     {
         Debug.Log("Enity4");
         (shareData as testShareData).state = 30;
+        //finish();
+        SimpleTask t = new SimpleTask(doTest(), true);
+        
+    }
+
+    IEnumerator doTest()
+    {
+        yield return new WaitForSeconds(5f);
         finish();
     }
 }

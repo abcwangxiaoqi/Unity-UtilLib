@@ -5,12 +5,14 @@ using UnityEngine;
 
 public class test:MonoBehaviour
 {
-    private void Start()
+    GameObject flow;
+    private void Awake()
     {
         UnityEngine.Object o = Resources.Load("testScriptNodeFlow");
 
-        GameObject flow = GameObject.Instantiate(o) as GameObject;
+        flow = GameObject.Instantiate(o) as GameObject;
         flow.GetComponent<NodeController>().onFinish += Test_onFinish;
+
     }
 
     private void Test_onFinish(bool obj)

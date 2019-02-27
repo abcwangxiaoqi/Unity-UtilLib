@@ -8,15 +8,13 @@ public static class PackageUtil
     /// 导出apk
     /// </summary>
     /// <param name="path">导出路径</param>
-    public static string PackageApk(string[] secens, string path)
+    public static void PackageApk(string[] secens, string path)
     {
         if (UnityEngine.Application.platform != RuntimePlatform.Android)
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android,BuildTarget.Android);
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
         }
-
-        string error=BuildPipeline.BuildPlayer(secens, path, BuildTarget.Android, BuildOptions.None);
-        return error;
+        BuildPipeline.BuildPlayer(secens, path, BuildTarget.Android, BuildOptions.None);
     }
 
     /// <summary>
@@ -24,29 +22,27 @@ public static class PackageUtil
     /// </summary>
     /// <param name="secens">场景</param>
     /// <param name="path">导出路径</param>
-    public static string ExportAndroidProject(string[] secens, string path)
+    public static void ExportAndroidProject(string[] secens, string path)
     {
         if (UnityEngine.Application.platform != RuntimePlatform.Android)
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget( BuildTargetGroup.Android,BuildTarget.Android);
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
         }
 
-        string error=BuildPipeline.BuildPlayer(secens, path, BuildTarget.Android, BuildOptions.AcceptExternalModificationsToPlayer);
-        return error;
+        BuildPipeline.BuildPlayer(secens, path, BuildTarget.Android, BuildOptions.AcceptExternalModificationsToPlayer);
     }
 
     /// <summary>
     /// 导出ios
     /// </summary>
     /// <param name="path">导出路径</param>
-    public static string PackageIOS(string[] secens, string path)
+    public static void PackageIOS(string[] secens, string path)
     {
         if (UnityEngine.Application.platform != RuntimePlatform.OSXEditor)
         {
-            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.iOS,BuildTarget.iOS);
+            EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.iOS, BuildTarget.iOS);
         }
 
-        string error = BuildPipeline.BuildPlayer(secens, path, BuildTarget.iOS, BuildOptions.AcceptExternalModificationsToPlayer);
-        return error;
+        BuildPipeline.BuildPlayer(secens, path, BuildTarget.iOS, BuildOptions.AcceptExternalModificationsToPlayer);
     }
 }
