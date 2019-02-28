@@ -17,6 +17,12 @@ namespace ObjectParseEditor
 
     public class ClassDraw : IDraw
     {
+        static GUIStyle labelStyle = new GUIStyle(EditorStyles.label);
+        static ClassDraw()
+        {
+            labelStyle.fontStyle = FontStyle.Bold;
+        }
+
         protected NestMap nest = null;
 
         //true展开  false不展开
@@ -54,15 +60,15 @@ namespace ObjectParseEditor
             }
             GUI.backgroundColor = Color.white;
 
-            GUILayout.Label(type.Name, EditorStyles.boldLabel);
+            GUILayout.Label(type.Name, labelStyle);
 
             if (tar.field != null)
             {
-                GUILayout.Label(tar.field.Name, EditorStyles.boldLabel);
+                GUILayout.Label(tar.field.Name, labelStyle);
             }
             else if (tar.property != null)
             {
-                GUILayout.Label(tar.property.Name, EditorStyles.boldLabel);
+                GUILayout.Label(tar.property.Name, labelStyle);
             }
 
             GUILayout.EndHorizontal();
